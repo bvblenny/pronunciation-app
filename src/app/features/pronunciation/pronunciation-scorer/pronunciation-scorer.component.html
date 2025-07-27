@@ -1,0 +1,159 @@
+<div class="pronunciation-scorer-container">
+  <mat-card class="main-card">
+    <mat-card-header>
+      <mat-card-title>Pronunciation Scorer</mat-card-title>
+      <mat-card-subtitle>Record or upload audio to score your pronunciation</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Reference Text Input -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Reference Text</mat-label>
+        <textarea
+          matInput
+          placeholder="Enter the text you want to pronounce"
+          [ngModel]="referenceText()"
+          (ngModelChange)="referenceText.set($event)"
+          rows="3">
+        </textarea>
+        <mat-hint>This is the text you'll be pronouncing</mat-hint>
+      </mat-form-field>
+
+      <!-- Language Selection -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Language</mat-label>
+        <mat-select
+          [ngModel]="languageCode()"
+          (ngModelChange)="languageCode.set($event)">
+          @for (option of languageOptions; track option.code) {
+            <mat-option [value]="option.code">{{ option.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Audio Recording Section -->
+      <div class="audio-section">
+        <div class="recording-controls">
+          @if (!isRecording()) {
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="startRecording()"
+              [disabled]="isLoading()">
+              <mat-icon>mic</mat-icon> Start Recording
+            </button>
+          } @else {
+            <button
+              mat-raised-button
+              color="warn"
+              (click)="stopRecording()">
+              <mat-icon>stop</mat-icon> Stop Recording
+            </button>
+          }
+
+          <span class="or-divider">OR</span>
+
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="fileInput.click()"
+            [disabled]="isLoading() || isRecording()">
+            <mat-icon>upload</mat-icon> Upload Audio
+          </button>
+          <input
+            #fileInput
+            type="file"
+            accept="audio/*"
+            style="display: none"
+            (change)="onFileSelected($event)">
+        </div>
+
+        <!-- Audio Player (if audio is recorded/uploaded) -->
+        @if (audioUrl()) {
+          <div class="audio-player">
+            <audio controls [src]="audioUrl()"></audio>
+          </div>
+        }
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="error-message">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Submit Button -->
+      <div class="submit-section">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="submitForScoring()"
+          [disabled]="isLoading() || !audioBlob() || !referenceText() || isRecording()">
+          Score Pronunciation
+        </button>
+        <button
+          mat-button
+          (click)="resetForm()"
+          [disabled]="isLoading() || isRecording()">
+          Reset
+        </button>
+      </div>
+
+      <!-- Loading Indicator -->
+      @if (isLoading()) {
+        <div class="loading-section">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <p>Analyzing pronunciation...</p>
+        </div>
+      }
+
+      <!-- Results Section -->
+      @if (pronunciationEvaluation()) {
+        <div class="results-section">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>Pronunciation Score</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <!-- Overall Score -->
+              <div class="overall-score">
+                <div class="score-circle" [style.background-color]="getScoreColor(getOverallScore())">
+                  {{ (getOverallScore() * 100).toFixed(0) }}%
+                </div>
+                <p>Overall Score</p>
+              </div>
+
+              <!-- Transcribed Text -->
+              <div class="transcribed-text">
+                <h3>Transcribed Text:</h3>
+                <p>{{ pronunciationEvaluation()!.transcript }}</p>
+              </div>
+
+              <!-- Word Details -->
+              <div class="word-details">
+                <h3>Word Analysis:</h3>
+                <div class="word-list">
+                  @for (word of pronunciationEvaluation()!.words; track word.word) {
+                    <div class="word-item" [class.incorrect]="word.evaluation < 0.6">
+                      <span class="word">{{ word.word }}</span>
+                      <span class="confidence">Score: {{ (word.evaluation * 100).toFixed(0) }}%</span>
+                      <span class="confidence">Duration: {{ (word.endTime - word.startTime).toFixed(2) }}s</span>
+                      <div class="phonemes">
+                        @for (phoneme of word.phonemes; track phoneme.phoneme) {
+                          <span class="phoneme" [style.color]="getScoreColor(phoneme.evaluation)">
+                            {{ phoneme.phoneme }}: {{ (phoneme.evaluation * 100).toFixed(0) }}%
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
