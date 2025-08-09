@@ -29,7 +29,7 @@ export class PronunciationService {
     formData.append('referenceText', referenceText);
     formData.append('languageCode', languageCode);
 
-    return this.http.post<PronunciationScore>(`${this.apiUrl}/api/pronunciation/score`, formData);
+    return this.http.post<PronunciationScore>(`${this.apiUrl}/api/pronunciation/evaluate-align`, formData);
   }
 
   scorePronunciationWithAlignment(
