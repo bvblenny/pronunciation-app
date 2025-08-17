@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+    "start:lan": "ng serve --host 0.0.0.0 --port 4200 --ssl true --ssl-cert .\\certs\\192.168.178.22.pem --ssl-key .\\certs\\192.168.178.22-key.pem --proxy-config proxy.conf.json",
     "test": "ng test"
   },
   "prettier": {

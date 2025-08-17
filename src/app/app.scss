@@ -2,40 +2,89 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  font-family: Inter, Roboto, "Helvetica Neue", Arial, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 .app-header {
-  background: linear-gradient(90deg, #7702FF 0%, #FF41F8 100%);
-  //color: white;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: var(--space-4) auto 0;
+  padding: var(--space-5) 0;
+  width: 100%;
 }
 
-.app-header h1 {
+@media (min-width: 768px) {
+  .app-header {
+    margin-top: var(--space-6);
+    padding: var(--space-6) 0;
+  }
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title h1 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: clamp(1.6rem, 2.2vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.title p {
   margin: 0;
-  font-size: 2.5rem;
-  font-weight: 500;
-}
-
-.app-header p {
-  margin: 10px 0 0;
-  font-size: 1.2rem;
-  opacity: 0.9;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .app-content {
   flex: 1;
-  padding: 20px;
-  //background-color: #f8f9fa;
+  padding: var(--space-6) 0 var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .app-content { padding: var(--space-8) 0 var(--space-10); }
 }
 
 .app-footer {
-  background-color: #343a40;
-  color: white;
+  color: var(--muted);
   text-align: center;
-  padding: 15px;
+  padding: var(--space-4);
   font-size: 0.9rem;
 }
+
+.app-header.glass-surface {
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(calc(var(--blur) + 2px));
+  backdrop-filter: blur(calc(var(--blur) + 2px));
+  border-bottom: 1px solid var(--glass-border);
+  position: relative;
+}
+
+.app-header.glass-surface::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 10px;
+  background: linear-gradient(to bottom, rgba(2,6,23,0.06), transparent);
+  pointer-events: none;
+}
+
+.brand-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--chip-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.brand-icon svg { width: 20px; height: 20px; fill: var(--primary-600); }

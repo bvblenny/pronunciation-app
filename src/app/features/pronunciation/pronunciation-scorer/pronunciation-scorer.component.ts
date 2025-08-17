@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 import {PronunciationEvaluationResult, PronunciationScore} from '../../../core/models/pronunciation.model';
 import {PronunciationService} from '../../../core/services/pronunciation.service';
 
@@ -23,7 +24,8 @@ import {PronunciationService} from '../../../core/services/pronunciation.service
     MatSelectModule,
     MatCardModule,
     MatProgressBarModule,
-    MatIconModule
+    MatIconModule,
+    MatDividerModule
   ],
   templateUrl: './pronunciation-scorer.component.html',
   styleUrl: './pronunciation-scorer.component.scss'
@@ -146,6 +148,15 @@ export class PronunciationScorerComponent {
     if (score >= 0.8) return 'green';
     if (score >= 0.6) return 'orange';
     return 'red';
+  }
+
+  getRingStyle(score: number): string {
+    // Map to color and percentage for conic gradient
+    const pct = Math.max(0, Math.min(1, score)) * 100;
+    const color = this.getScoreColor(score);
+    // Track/background colors
+    const track = 'rgba(2,6,23,0.08)';
+    return `conic-gradient(${color} ${pct}%, ${track} ${pct}% 100%)`;
   }
 
   resetForm() {
