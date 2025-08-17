@@ -84,21 +84,21 @@
         <!-- Audio Player (if audio is recorded/uploaded) -->
         @if (audioUrl()) {
           <div class="audio-player glass-surface">
-            <audio controls [src]="audioUrl()"></audio>
+            <audio controls [src]="audioUrl()" aria-label="Recorded or uploaded audio preview"></audio>
           </div>
         }
       </section>
 
       <!-- Error Message -->
       @if (errorMessage()) {
-        <div class="error-message chip" role="alert">
+        <div class="error-message chip" role="alert" aria-live="assertive">
           <mat-icon aria-hidden="true">error_outline</mat-icon>
           <span>{{ errorMessage() }}</span>
         </div>
       }
 
-      <!-- Submit Button -->
-      <section class="section submit-section">
+      <!-- Submit Actions -->
+      <mat-card-actions class="submit-section">
         <button
           mat-raised-button
           color="primary"
@@ -114,11 +114,11 @@
           aria-label="Reset form">
           Reset
         </button>
-      </section>
+      </mat-card-actions>
 
       <!-- Loading Indicator -->
       @if (isLoading()) {
-        <div class="loading-section">
+        <div class="loading-section" aria-live="polite" aria-busy="true">
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
           <p>Analyzing pronunciation...</p>
         </div>
@@ -136,7 +136,7 @@
             <mat-card-content>
               <!-- Overall Score -->
               <div class="overall-score">
-                <div class="score-ring" [style.background]="'conic-gradient(' + getScoreColor(getOverallScore()) + ' ' + ((getOverallScore()*100).toFixed(0)) + '%, rgba(2,6,23,0.08) ' + ((getOverallScore()*100).toFixed(0)) + '%, rgba(2,6,23,0.08) 100%)'">
+                <div class="score-ring" [style.background]="getRingStyle(getOverallScore())" role="img" aria-label="Overall pronunciation score">
                   <div class="score-ring__inner">
                     {{ (getOverallScore() * 100).toFixed(0) }}%
                   </div>

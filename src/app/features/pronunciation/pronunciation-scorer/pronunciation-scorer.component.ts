@@ -145,9 +145,9 @@ export class PronunciationScorerComponent {
   }
 
   getScoreColor(score: number): string {
-    if (score >= 0.8) return 'green';
-    if (score >= 0.6) return 'orange';
-    return 'red';
+    if (score >= 0.8) return 'var(--primary)';
+    if (score >= 0.6) return '#f59e0b'; // amber-500
+    return '#ef4444'; // red-500
   }
 
   getRingStyle(score: number): string {

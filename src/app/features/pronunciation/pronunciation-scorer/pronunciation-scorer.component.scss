@@ -4,6 +4,10 @@
   padding: var(--space-6);
 }
 
+@media (max-width: 600px) {
+  .pronunciation-scorer-container { padding: var(--space-4); }
+}
+
 .main-card {
   width: 100%;
   max-width: 920px;
@@ -14,13 +18,13 @@
   margin-block: var(--space-6);
 }
 
-.full-width {
-  width: 100%;
+@media (max-width: 600px) {
+  .section { margin-block: var(--space-5); }
 }
 
-.audio-section {
-  margin: var(--space-6) 0;
-}
+.full-width { width: 100%; }
+
+.audio-section { margin: var(--space-6) 0; }
 
 .recording-controls {
   display: flex;
@@ -29,9 +33,11 @@
   gap: var(--space-4);
 }
 
-.or-chip {
-  color: var(--muted);
+@media (max-width: 600px) {
+  .recording-controls { gap: var(--space-3); }
 }
+
+.or-chip { color: var(--muted); }
 
 .rec-dot {
   width: 8px;
@@ -57,9 +63,7 @@
   border-radius: 12px;
 }
 
-.audio-player audio {
-  width: 100%;
-}
+.audio-player audio { width: 100%; }
 
 .error-message {
   color: #b91c1c;
@@ -69,6 +73,10 @@
 .submit-section {
   display: flex;
   gap: var(--space-4);
+}
+
+@media (max-width: 600px) {
+  .submit-section { flex-direction: column; }
 }
 
 .loading-section {
@@ -98,10 +106,14 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
+  border: 1px solid var(--glass-border);
+  background: rgba(2,6,23,0.06);
 }
+
 @media (min-width: 768px) {
   .score-ring { --size: 120px; }
 }
+
 .score-ring__inner {
   width: calc(var(--size) - 16px);
   height: calc(var(--size) - 16px);
@@ -112,6 +124,7 @@
   color: var(--text);
   font-weight: 700;
   font-size: 1.1rem;
+  border: 1px solid var(--glass-border);
 }
 
 .transcribed-text {
@@ -132,6 +145,11 @@
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: var(--space-4);
 }
+
+@media (max-width: 600px) {
+  .word-list { gap: var(--space-3); }
+}
+
 @media (min-width: 768px) {
   .word-list { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 }
@@ -144,11 +162,11 @@
   background: rgba(255,255,255,0.8);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
-.word-item.incorrect {
-  background: rgba(254, 242, 242, 0.9);
-}
+
+.word-item.incorrect { background: rgba(254, 242, 242, 0.9); }
+
 .word-item:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 
 .word-row {
@@ -180,6 +198,8 @@
   border-radius: 999px;
   border: 1px solid rgba(2, 6, 23, 0.06);
 }
+
+.phoneme:hover { background-color: rgba(255, 255, 255, 0.9); }
 
 /* Soft Divider */
 .soft-divider {
