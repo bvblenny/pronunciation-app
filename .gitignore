@@ -40,3 +40,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local-only dev certs and proxy config (do not publish)
+certs/
+proxy.conf.json
+!proxy.conf.sample.json

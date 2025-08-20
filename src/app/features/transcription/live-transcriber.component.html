@@ -1,0 +1,93 @@
+<div class="live-transcriber-container">
+  <mat-card class="glass-surface elevate main-card">
+    <mat-card-header>
+      <mat-card-title>Live Transcription</mat-card-title>
+      <mat-card-subtitle>Transcribe microphone input or upload audio/video</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <section class="controls section">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Language</mat-label>
+          <mat-select [ngModel]="languageCode()" (ngModelChange)="languageCode.set($event)">
+            @for (option of languages(); track option.code) {
+              <mat-option [value]="option.code">{{ option.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="buttons">
+          @if (isSupported()) {
+            @if (!isListening()) {
+              <button mat-raised-button color="primary" (click)="start()" aria-label="Start live transcription">
+                <mat-icon>mic</mat-icon>
+                <span>Start</span>
+              </button>
+            } @else {
+              <button mat-raised-button color="warn" (click)="stop()" aria-label="Stop live transcription">
+                <mat-icon>stop</mat-icon>
+                <span>Stop</span>
+              </button>
+              <span class="chip" aria-live="polite">Listening…</span>
+            }
+          } @else {
+            <div class="unsupported chip" role="note">Browser speech recognition not supported. Use file upload.</div>
+          }
+
+          <button mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="isListening() || isTranscribing()" aria-label="Upload audio or video">
+            <mat-icon>upload</mat-icon>
+            <span>Upload</span>
+          </button>
+          <input #fileInput type="file" accept="audio/*,video/*" (change)="onFileSelected($event)" hidden />
+        </div>
+      </section>
+
+      @if (isTranscribing()) {
+        <div class="loading-section" aria-live="polite" aria-busy="true">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <p>Transcribing file…</p>
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="error-message chip" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <div class="soft-divider" aria-hidden="true"></div>
+
+      <section class="transcript section">
+        <div class="toolbar">
+          <button mat-button (click)="copy()" [disabled]="!fullTranscript()">
+            <mat-icon>content_copy</mat-icon>
+            <span>Copy</span>
+          </button>
+          <button mat-button (click)="clear()" [disabled]="segments().length === 0 && !interim()">
+            <mat-icon>backspace</mat-icon>
+            <span>Clear</span>
+          </button>
+          <button mat-button (click)="speak(fullTranscript())" [disabled]="!fullTranscript()">
+            <mat-icon>volume_up</mat-icon>
+            <span>Listen</span>
+          </button>
+        </div>
+
+        <div class="transcript-body glass-surface" role="log" aria-live="polite">
+          <div class="segment-list">
+            @for (s of segments(); track s.at) {
+              <span class="segment" (click)="speak(s.text)" title="Click to listen">
+                <small class="chip" aria-hidden="true">{{ formatMs(s.at) }}</small>
+                {{ s.text }}
+              </span>
+            }
+            @if (interim()) {
+              <span class="interim">{{ interim() }}</span>
+            }
+          </div>
+        </div>
+      </section>
+    </mat-card-content>
+  </mat-card>
+</div>

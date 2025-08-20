@@ -30,12 +30,6 @@
   line-height: 1.2;
 }
 
-.title p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
 .app-content {
   flex: 1;
   padding: var(--space-6) 0 var(--space-8);
@@ -43,13 +37,6 @@
 
 @media (min-width: 768px) {
   .app-content { padding: var(--space-8) 0 var(--space-10); }
-}
-
-.app-footer {
-  color: var(--muted);
-  text-align: center;
-  padding: var(--space-4);
-  font-size: 0.9rem;
 }
 
 .app-header.glass-surface {
@@ -85,3 +72,29 @@
 }
 
 .brand-icon svg { width: 20px; height: 20px; fill: var(--primary-600); }
+
+/* Header navigation */
+.header-nav {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.header-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  text-decoration: none;
+  background: #fff;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.header-nav a:hover { background: var(--primary-50); }
+
+.header-nav a.active {
+  background: var(--primary-50);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}

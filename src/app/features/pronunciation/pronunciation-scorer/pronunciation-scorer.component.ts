@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import {PronunciationEvaluationResult, PronunciationScore} from '../../../core/models/pronunciation.model';
 import {PronunciationService} from '../../../core/services/pronunciation.service';
+import { DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../../core/services/pronunciation.service';
 
 @Component({
   selector: 'app-pronunciation-scorer',
@@ -30,11 +31,11 @@ import {PronunciationService} from '../../../core/services/pronunciation.service
   templateUrl: './pronunciation-scorer.component.html',
   styleUrl: './pronunciation-scorer.component.scss'
 })
-export class PronunciationScorerComponent {
+export class PronunciationScorerComponent implements OnInit, OnDestroy {
   referenceText = signal('');
   languageCode = signal('en-US');
   isRecording = signal(false);
-  audioBlob = signal<Blob | null>(null);
+  audioBlob = signal<File | null>(null);
   audioUrl = signal<string | null>(null);
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
@@ -44,20 +45,42 @@ export class PronunciationScorerComponent {
   mediaRecorder: MediaRecorder | null = null;
   audioChunks: Blob[] = [];
 
-  languageOptions = [
-    { code: 'en-US', name: 'English (US)' },
-    { code: 'en-GB', name: 'English (UK)' },
-    { code: 'es-ES', name: 'Spanish' },
-    { code: 'fr-FR', name: 'French' },
-    { code: 'de-DE', name: 'German' }
-  ];
+  languageOptions: { code: string; name: string }[] = [];
 
   constructor(private pronunciationService: PronunciationService) {}
+
+  ngOnInit(): void {
+    this.pronunciationService.getTranscriptionLanguages().subscribe({
+      next: langs => {
+        this.languageOptions = (langs && langs.length) ? langs : [...DEFAULT_TRANSCRIPTION_LANGUAGES];
+      },
+      error: () => {
+        this.languageOptions = [...DEFAULT_TRANSCRIPTION_LANGUAGES];
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Stop recording if active and release media tracks
+    if (this.mediaRecorder) {
+      try { this.mediaRecorder.stop(); } catch {}
+      const stream: MediaStream | undefined = (this.mediaRecorder as any).stream;
+      stream?.getTracks().forEach(t => t.stop());
+    }
+    // Revoke any created object URLs to avoid memory leaks
+    const url = this.audioUrl();
+    if (url) {
+      try { URL.revokeObjectURL(url); } catch {}
+      this.audioUrl.set(null);
+    }
+  }
 
   async startRecording() {
     try {
       this.errorMessage.set(null);
       this.audioChunks = [];
+      const prevUrl = this.audioUrl();
+      if (prevUrl) { try { URL.revokeObjectURL(prevUrl); } catch {} }
       this.audioBlob.set(null);
       this.audioUrl.set(null);
       this.pronunciationScore.set(null);
@@ -73,9 +96,11 @@ export class PronunciationScorerComponent {
       };
 
       this.mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
-        this.audioBlob.set(audioBlob);
-        this.audioUrl.set(URL.createObjectURL(audioBlob));
+        const blob = new Blob(this.audioChunks, { type: 'audio/wav' });
+        const file = new File([blob], 'recording.wav', { type: blob.type || 'audio/wav' });
+        this.audioBlob.set(file);
+        const url = URL.createObjectURL(file);
+        this.audioUrl.set(url);
 
         stream.getTracks().forEach(track => track.stop());
       };
@@ -99,6 +124,8 @@ export class PronunciationScorerComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
+      const prevUrl = this.audioUrl();
+      if (prevUrl) { try { URL.revokeObjectURL(prevUrl); } catch {} }
       this.audioBlob.set(file);
       this.audioUrl.set(URL.createObjectURL(file));
       this.pronunciationScore.set(null);
@@ -121,7 +148,7 @@ export class PronunciationScorerComponent {
     this.errorMessage.set(null);
 
     this.pronunciationService.scorePronunciationWithAlignment(
-      this.audioBlob() as File,
+      this.audioBlob()!,
       this.referenceText(),
     ).subscribe({
       next: (result) => {
@@ -162,6 +189,8 @@ export class PronunciationScorerComponent {
   resetForm() {
     this.referenceText.set('');
     this.audioBlob.set(null);
+    const prevUrl = this.audioUrl();
+    if (prevUrl) { try { URL.revokeObjectURL(prevUrl); } catch {} }
     this.audioUrl.set(null);
     this.pronunciationScore.set(null);
     this.pronunciationEvaluation.set(null);

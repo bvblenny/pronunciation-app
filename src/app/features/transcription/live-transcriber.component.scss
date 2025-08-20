@@ -1,0 +1,64 @@
+.live-transcriber-container {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+@media (max-width: 600px) {
+  .live-transcriber-container { padding: var(--space-4); }
+}
+
+.main-card {
+  width: 100%;
+  max-width: 920px;
+  padding: var(--space-4) var(--space-6);
+}
+
+.section { margin-block: var(--space-5); }
+
+.full-width { width: 100%; }
+
+.controls .buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.unsupported { color: var(--muted); }
+
+.transcript .toolbar {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.transcript-body {
+  padding: var(--space-4);
+  border-radius: 12px;
+  max-height: 45vh;
+  overflow: auto;
+}
+
+.segment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.segment, .interim {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+}
+
+.segment {
+  background: #fff;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.segment:hover { background: var(--primary-50); transform: translateY(-1px); }
+
+.interim { background: var(--chip-bg); color: var(--muted); font-style: italic; }

@@ -38,7 +38,7 @@ describe('PronunciationService', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    const req = httpMock.expectOne('http://localhost:8080/api/pronunciation/score');
+    const req = httpMock.expectOne('/api/pronunciation/score');
     expect(req.request.method).toBe('POST');
     expect(req.request.body.has('audio')).toBeTrue();
     expect(req.request.body.has('referenceText')).toBeTrue();
@@ -69,7 +69,7 @@ describe('PronunciationService', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    const req = httpMock.expectOne('http://localhost:8080/api/pronunciation/evaluate-align');
+    const req = httpMock.expectOne('/api/pronunciation/evaluate-align');
     expect(req.request.method).toBe('POST');
     expect(req.request.body.has('audio')).toBeTrue();
     expect(req.request.body.has('referenceText')).toBeTrue();
@@ -88,7 +88,7 @@ describe('PronunciationService', () => {
       },
     });
 
-    const req = httpMock.expectOne('http://localhost:8080/api/pronunciation/score');
+    const req = httpMock.expectOne('/api/pronunciation/score');
     req.flush('Internal Server Error', { status: 500, statusText: 'Server Error' });
   });
 
@@ -103,7 +103,7 @@ describe('PronunciationService', () => {
       },
     });
 
-    const req = httpMock.expectOne('http://localhost:8080/api/pronunciation/evaluate-align');
+    const req = httpMock.expectOne('/api/pronunciation/evaluate-align');
     req.flush('Bad Request', { status: 400, statusText: 'Bad Request' });
   });
 });
