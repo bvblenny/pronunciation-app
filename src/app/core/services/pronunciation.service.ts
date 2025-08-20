@@ -3,13 +3,23 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {PronunciationEvaluationResult, PronunciationScore} from '../models/pronunciation.model';
 
+export interface TranscriptionLanguage { code: string; name: string }
+export interface TranscriptionSegment { text: string; startMs: number; endMs: number }
+export interface TranscriptionResponse { transcript: string; segments?: TranscriptionSegment[] }
+
+export const DEFAULT_TRANSCRIPTION_LANGUAGES: ReadonlyArray<TranscriptionLanguage> = [
+  { code: 'en-US', name: 'English (US)' },
+  { code: 'en-GB', name: 'English (UK)' },
+  { code: 'es-ES', name: 'Spanish' },
+  { code: 'fr-FR', name: 'French' },
+  { code: 'de-DE', name: 'German' },
+] as const;
+
 @Injectable({
   providedIn: 'root'
 })
 export class PronunciationService {
-  private apiUrl = 'http://localhost:8080'; // Adjust this to match your Spring Boot server URL
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /**
    * Sends audio file, reference text, and language code to the server for pronunciation scoring
@@ -29,7 +39,7 @@ export class PronunciationService {
     formData.append('referenceText', referenceText);
     formData.append('languageCode', languageCode);
 
-    return this.http.post<PronunciationScore>(`${this.apiUrl}/api/pronunciation/evaluate-align`, formData);
+    return this.http.post<PronunciationScore>(`/api/pronunciation/score`, formData);
   }
 
   scorePronunciationWithAlignment(
@@ -40,6 +50,24 @@ export class PronunciationService {
     formData.append('audio', audio);
     formData.append('referenceText', referenceText);
 
-    return this.http.post<PronunciationEvaluationResult>(`${this.apiUrl}/api/pronunciation/evaluate-align`, formData);
+    return this.http.post<PronunciationEvaluationResult>(`/api/pronunciation/evaluate-align`, formData);
+  }
+
+  /**
+   * Transcribe an uploaded audio or video file via backend.
+   * Expects a JSON payload like: { transcript: string, segments?: [...] }
+   */
+  transcribeAudio(file: File, languageCode: string = 'en-US'): Observable<TranscriptionResponse> {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('languageCode', languageCode);
+    return this.http.post<TranscriptionResponse>(`/api/transcription/transcribe`, form);
+  }
+
+  /**
+   * Fetch available transcription languages from backend.
+   */
+  getTranscriptionLanguages(): Observable<TranscriptionLanguage[]> {
+    return this.http.get<TranscriptionLanguage[]>(`/api/transcription/languages`);
   }
 }
