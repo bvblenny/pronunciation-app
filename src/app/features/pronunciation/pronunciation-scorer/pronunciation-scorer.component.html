@@ -2,7 +2,7 @@
   <mat-card class="main-card glass-surface elevate">
     <mat-card-header>
       <mat-card-title>Pronunciation Scorer</mat-card-title>
-      <mat-card-subtitle>Record or upload audio to score your pronunciation</mat-card-subtitle>
+      <mat-card-subtitle>Record or upload audio to get detailed analysis</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
@@ -104,8 +104,8 @@
           color="primary"
           (click)="submitForScoring()"
           [disabled]="isLoading() || !audioBlob() || !referenceText() || isRecording()"
-          aria-label="Score pronunciation">
-          Score Pronunciation
+          aria-label="Analyze pronunciation">
+          Analyze Pronunciation
         </button>
         <button
           mat-button
@@ -127,11 +127,11 @@
       <div class="soft-divider" role="separator" aria-hidden="true"></div>
 
       <!-- Results Section -->
-      @if (pronunciationEvaluation()) {
+      @if (detailedAnalysis()) {
         <section class="section results-section">
           <mat-card class="glass-surface">
             <mat-card-header>
-              <mat-card-title>Results</mat-card-title>
+              <mat-card-title>Detailed Analysis</mat-card-title>
             </mat-card-header>
             <mat-card-content>
               <!-- Overall Score -->
@@ -144,34 +144,75 @@
                 <p>Overall Score</p>
               </div>
 
+              <!-- High-level Metrics -->
+              <div class="glass-surface metrics">
+                <div class="metric"><span class="label">WER</span><span class="value">{{ (detailedAnalysis()!.wer * 100).toFixed(1) }}%</span></div>
+                <div class="metric"><span class="label">Substitutions</span><span class="value">{{ detailedAnalysis()!.substitutions }}</span></div>
+                <div class="metric"><span class="label">Insertions</span><span class="value">{{ detailedAnalysis()!.insertions }}</span></div>
+                <div class="metric"><span class="label">Deletions</span><span class="value">{{ detailedAnalysis()!.deletions }}</span></div>
+                @if (detailedAnalysis()!.totalDurationSec) {
+                  <div class="metric"><span class="label">Duration</span><span class="value">{{ formatSec(detailedAnalysis()!.totalDurationSec) }}</span></div>
+                }
+                @if (detailedAnalysis()!.speechRateWpm) {
+                  <div class="metric"><span class="label">WPM</span><span class="value">{{ detailedAnalysis()!.speechRateWpm!.toFixed(0) }}</span></div>
+                }
+              </div>
+
               <!-- Transcribed Text -->
               <div class="transcribed-text glass-surface">
                 <h3>Transcribed Text</h3>
-                <p>{{ pronunciationEvaluation()!.transcript }}</p>
+                <p>{{ detailedAnalysis()!.transcript }}</p>
               </div>
 
               <!-- Word Details -->
               <div class="word-details">
                 <h3>Word Analysis</h3>
                 <div class="word-list">
-                  @for (word of pronunciationEvaluation()!.words; track word.word) {
-                    <div class="word-item elevate" [class.incorrect]="word.evaluation < 0.6">
+                  @for (word of detailedAnalysis()!.words; track word.index) {
+                    <div class="word-item elevate" [class.incorrect]="word.errorType !== 'MATCH' && (word.evaluation ?? 1) < 0.6">
                       <div class="word-row">
-                        <span class="word chip">{{ word.word }}</span>
-                        <span class="confidence">Score: {{ (word.evaluation * 100).toFixed(0) }}%</span>
-                        <span class="confidence">Duration: {{ (word.endTime - word.startTime).toFixed(2) }}s</span>
-                      </div>
-                      <div class="phonemes">
-                        @for (phoneme of word.phonemes; track phoneme.phoneme) {
-                          <span class="phoneme" [style.color]="getScoreColor(phoneme.evaluation)">
-                            {{ phoneme.phoneme }}: {{ (phoneme.evaluation * 100).toFixed(0) }}%
-                          </span>
+                        <span class="word chip">{{ word.actual || word.expected }}</span>
+                        @if (word.errorType !== 'MATCH') {
+                          <span class="confidence">{{ word.errorType }}</span>
+                        }
+                        @if (word.evaluation != null) {
+                          <span class="confidence">Score: {{ ((word.evaluation || 0) * 100).toFixed(0) }}%</span>
+                        }
+                        @if (word.durationSec != null) {
+                          <span class="confidence">Duration: {{ word.durationSec!.toFixed(2) }}s</span>
                         }
                       </div>
+                      @if (word.phonemes?.length) {
+                        <div class="phonemes">
+                          @for (phoneme of word.phonemes; track phoneme.phoneme) {
+                            <span class="phoneme" [style.color]="getScoreColor(phoneme.evaluation)">
+                              {{ phoneme.phoneme }}: {{ (phoneme.evaluation * 100).toFixed(0) }}%
+                            </span>
+                          }
+                        </div>
+                      }
                     </div>
                   }
                 </div>
               </div>
+
+              <!-- Pauses -->
+              @if (detailedAnalysis()!.pauses?.length) {
+                <div class="pauses glass-surface">
+                  <h3>Pauses</h3>
+                  <div class="pause-list">
+                    @for (p of detailedAnalysis()!.pauses; track p.startTimeSec) {
+                      <div class="pause-item">
+                        <span class="chip">{{ formatSec(p.startTimeSec) }} - {{ formatSec(p.endTimeSec) }}</span>
+                        <span class="muted"> ({{ p.durationSec.toFixed(2) }}s)</span>
+                        @if (p.precedingWord || p.followingWord) {
+                          <span class="muted"> between {{ p.precedingWord || '...' }} and {{ p.followingWord || '...' }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
             </mat-card-content>
           </mat-card>
         </section>

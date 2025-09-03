@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {PronunciationEvaluationResult, PronunciationScore} from '../models/pronunciation.model';
+import {PronunciationEvaluationResult, PronunciationScore, DetailedAnalysisDto} from '../models/pronunciation.model';
 
 export interface TranscriptionLanguage { code: string; name: string }
 export interface TranscriptionSegment { text: string; startMs: number; endMs: number }
@@ -53,6 +53,16 @@ export class PronunciationService {
     return this.http.post<PronunciationEvaluationResult>(`/api/pronunciation/evaluate-align`, formData);
   }
 
+  /** Detailed pronunciation analysis (new endpoint) */
+  analyzeDetailed(audio: File, referenceText: string, languageCode: string = 'en-US'):
+    Observable<DetailedAnalysisDto> {
+    const form = new FormData();
+    form.append('audio', audio);
+    // referenceText and languageCode are query params per OpenAPI
+    const params = new URLSearchParams({ referenceText, languageCode });
+    return this.http.post<DetailedAnalysisDto>(`/api/pronunciation/analyze-detailed?${params.toString()}`, form);
+  }
+
   /**
    * Transcribe an uploaded audio or video file via backend.
    * Expects a JSON payload like: { transcript: string, segments?: [...] }
@@ -60,8 +70,9 @@ export class PronunciationService {
   transcribeAudio(file: File, languageCode: string = 'en-US'): Observable<TranscriptionResponse> {
     const form = new FormData();
     form.append('file', file);
-    form.append('languageCode', languageCode);
-    return this.http.post<TranscriptionResponse>(`/api/transcription/transcribe`, form);
+    // languageCode is a query parameter per OpenAPI; keep only in URL
+    const params = new URLSearchParams({ languageCode });
+    return this.http.post<TranscriptionResponse>(`/api/transcription/transcribe?${params.toString()}`, form);
   }
 
   /**
