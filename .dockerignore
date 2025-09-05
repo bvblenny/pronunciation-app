@@ -1,0 +1,48 @@
+# Node modules
+node_modules
+npm-debug.log*
+
+# Build output - commented out since we want to include it for Docker
+# dist
+
+# IDE
+.vscode
+.idea
+*.iml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Certificates (if any)
+certs
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+tmp
+temp

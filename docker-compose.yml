@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Angular Frontend
+  pronunciation-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.multistage
+    ports:
+      - "4200:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - pronunciation-service
+    networks:
+      - pronunciation-network
+    restart: unless-stopped
+
+  # Spring Boot Backend (placeholder - replace with actual service when available)
+  pronunciation-service:
+    # Replace this with your actual pronunciation-service image when available
+    # image: pronunciation-service:latest
+    # For now, using a placeholder service
+    image: httpd:alpine
+    ports:
+      - "8080:80"
+    networks:
+      - pronunciation-network
+    restart: unless-stopped
+    # Uncomment and configure when ready to use with actual backend
+    # environment:
+    #   - SPRING_PROFILES_ACTIVE=docker
+    # volumes:
+    #   - app-data:/data
+
+networks:
+  pronunciation-network:
+    driver: bridge
+
+volumes:
+  # Define any volumes needed for data persistence
+  app-data:

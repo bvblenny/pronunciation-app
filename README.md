@@ -34,6 +34,7 @@ Backend repo: https://github.com/bvblenny/pronunciation-service
 
 ## Quickstart
 
+### Option 1: Local Development
 1) Install dependencies
 ```bash
 npm install
@@ -55,6 +56,18 @@ npm run start:proxy
 npm start
 ```
 Then open http://localhost:4200/
+
+### Option 2: Docker (Recommended)
+```bash
+# Build and run standalone frontend
+docker build -t pronunciation-app .
+docker run -p 4200:80 pronunciation-app
+
+# Or use docker-compose for development
+docker-compose -f docker-compose.dev.yml up
+```
+
+See [DOCKER.md](DOCKER.md) for detailed Docker setup instructions.
 
 ### Optional: LAN HTTPS dev server
 - Put your local certs in `certs/` (ignored by Git), e.g. `cert.pem` and `cert-key.pem`.

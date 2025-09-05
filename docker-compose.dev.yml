@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  # Angular Frontend
+  pronunciation-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - pronunciation-network
+    restart: unless-stopped
+
+networks:
+  pronunciation-network:
+    driver: bridge
