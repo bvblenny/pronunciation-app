@@ -8,7 +8,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { PronunciationService, TranscriptionLanguage, TranscriptionResponse, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../core/services/pronunciation.service';
+import { PronunciationService, TranscriptionLanguage, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../core/services/pronunciation.service';
+import { TranscriptionResult } from '../../core/models/domain/transcription.domain';
 
 interface TranscriptSegment { text: string; at: number; }
 
@@ -156,7 +157,7 @@ export class LiveTranscriberComponent implements OnDestroy, OnInit {
       this.errorMessage.set(null);
       this.isTranscribing.set(true);
       this.svc.transcribeAudio(file, this.languageCode()).subscribe({
-        next: (res: TranscriptionResponse) => {
+        next: (res: TranscriptionResult) => {
           const segs = (res.segments && res.segments.length)
             ? res.segments.map(s => ({ text: s.text, at: s.startMs }))
             : (res.transcript ? [{ text: res.transcript, at: 0 }] : []);

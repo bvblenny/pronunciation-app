@@ -1,8 +1,21 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {PronunciationEvaluationResult, PronunciationScore, DetailedAnalysisDto} from '../models/pronunciation.model';
+import { map } from 'rxjs/operators';
+import { PronunciationApiClient } from '../api/clients/pronunciation-api.client';
+import { TranscriptionApiClient } from '../api/clients/transcription-api.client';
+import { PronunciationAdapter } from '../api/adapters/pronunciation.adapter';
+import { TranscriptionAdapter } from '../api/adapters/transcription.adapter';
+import {
+  PronunciationScore,
+  PronunciationEvaluation,
+  PronunciationAnalysis
+} from '../models/domain/pronunciation.domain';
+import {
+  TranscriptionResult,
+  TranscriptionLanguage as DomainTranscriptionLanguage
+} from '../models/domain/transcription.domain';
 
+// Re-export types for backward compatibility
 export interface TranscriptionLanguage { code: string; name: string }
 export interface TranscriptionSegment { text: string; startMs: number; endMs: number }
 export interface TranscriptionResponse { transcript: string; segments?: TranscriptionSegment[] }
@@ -15,70 +28,76 @@ export const DEFAULT_TRANSCRIPTION_LANGUAGES: ReadonlyArray<TranscriptionLanguag
   { code: 'de-DE', name: 'German' },
 ] as const;
 
+/**
+ * Pronunciation Service
+ * Business logic layer that uses API clients and adapters
+ * Components work with domain models, not API contracts
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class PronunciationService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private pronunciationApi: PronunciationApiClient,
+    private transcriptionApi: TranscriptionApiClient
+  ) {}
 
   /**
-   * Sends audio file, reference text, and language code to the server for pronunciation scoring
-   *
-   * @param audio The audio file containing the pronunciation to score
-   * @param referenceText The text that should have been pronounced
-   * @param languageCode The language code (default: 'en-US')
-   * @returns An Observable with the pronunciation score results
+   * Score pronunciation with basic analysis
+   * Returns domain model, not API response
    */
   scorePronunciation(
     audio: File,
     referenceText: string,
     languageCode: string = 'en-US'
   ): Observable<PronunciationScore> {
-    const formData = new FormData();
-    formData.append('audio', audio);
-    formData.append('referenceText', referenceText);
-    formData.append('languageCode', languageCode);
-
-    return this.http.post<PronunciationScore>(`/api/pronunciation/score`, formData);
+    return this.pronunciationApi.scorePronunciation(audio, referenceText, languageCode)
+      .pipe(map(apiResponse => PronunciationAdapter.scoreToDomain(apiResponse)));
   }
 
+  /**
+   * Score pronunciation with word alignment
+   * Returns domain model, not API response
+   */
   scorePronunciationWithAlignment(
     audio: File,
-    referenceText: string,
-  ): Observable<PronunciationEvaluationResult> {
-    const formData = new FormData();
-    formData.append('audio', audio);
-    formData.append('referenceText', referenceText);
-
-    return this.http.post<PronunciationEvaluationResult>(`/api/pronunciation/evaluate-align`, formData);
-  }
-
-  /** Detailed pronunciation analysis (new endpoint) */
-  analyzeDetailed(audio: File, referenceText: string, languageCode: string = 'en-US'):
-    Observable<DetailedAnalysisDto> {
-    const form = new FormData();
-    form.append('audio', audio);
-    // referenceText and languageCode are query params per OpenAPI
-    const params = new URLSearchParams({ referenceText, languageCode });
-    return this.http.post<DetailedAnalysisDto>(`/api/pronunciation/analyze-detailed?${params.toString()}`, form);
+    referenceText: string
+  ): Observable<PronunciationEvaluation> {
+    return this.pronunciationApi.scorePronunciationWithAlignment(audio, referenceText)
+      .pipe(map(apiResponse => PronunciationAdapter.evaluationToDomain(apiResponse)));
   }
 
   /**
-   * Transcribe an uploaded audio or video file via backend.
-   * Expects a JSON payload like: { transcript: string, segments?: [...] }
+   * Detailed pronunciation analysis
+   * Returns domain model, not API response
    */
-  transcribeAudio(file: File, languageCode: string = 'en-US'): Observable<TranscriptionResponse> {
-    const form = new FormData();
-    form.append('file', file);
-    // languageCode is a query parameter per OpenAPI; keep only in URL
-    const params = new URLSearchParams({ languageCode });
-    return this.http.post<TranscriptionResponse>(`/api/transcription/transcribe?${params.toString()}`, form);
+  analyzeDetailed(
+    audio: File,
+    referenceText: string,
+    languageCode: string = 'en-US'
+  ): Observable<PronunciationAnalysis> {
+    return this.pronunciationApi.analyzeDetailed(audio, referenceText, languageCode)
+      .pipe(map(apiResponse => PronunciationAdapter.detailedAnalysisToDomain(apiResponse)));
   }
 
   /**
-   * Fetch available transcription languages from backend.
+   * Transcribe audio or video file
+   * Returns domain model, not API response
+   */
+  transcribeAudio(
+    file: File,
+    languageCode: string = 'en-US'
+  ): Observable<TranscriptionResult> {
+    return this.transcriptionApi.transcribeAudio(file, languageCode)
+      .pipe(map(apiResponse => TranscriptionAdapter.resultToDomain(apiResponse)));
+  }
+
+  /**
+   * Get available transcription languages
+   * Returns domain models, not API responses
    */
   getTranscriptionLanguages(): Observable<TranscriptionLanguage[]> {
-    return this.http.get<TranscriptionLanguage[]>(`/api/transcription/languages`);
+    return this.transcriptionApi.getLanguages()
+      .pipe(map(apiLanguages => TranscriptionAdapter.languagesToDomain(apiLanguages)));
   }
 }

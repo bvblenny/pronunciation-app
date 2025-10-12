@@ -2,6 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { PronunciationService } from './pronunciation.service';
 import { PronunciationEvaluationResult, PronunciationScore } from '../models/pronunciation.model';
+import {
+  PronunciationScore as DomainPronunciationScore,
+  PronunciationEvaluation as DomainPronunciationEvaluation
+} from '../models/domain/pronunciation.domain';
 
 describe('PronunciationService', () => {
   let service: PronunciationService;
@@ -21,7 +25,16 @@ describe('PronunciationService', () => {
   });
 
   it('should send audio and reference text for scoring and return PronunciationScore', () => {
-    const mockResponse: PronunciationScore = {
+    const mockApiResponse: PronunciationScore = {
+      score: 0.85,
+      transcribedText: 'hello world',
+      wordDetails: [
+        { word: 'hello', confidence: 0.9, isCorrect: true, expectedWord: null },
+        { word: 'world', confidence: 0.8, isCorrect: true, expectedWord: null },
+      ],
+    };
+
+    const expectedDomainResponse: DomainPronunciationScore = {
       score: 0.85,
       transcribedText: 'hello world',
       wordDetails: [
@@ -35,7 +48,7 @@ describe('PronunciationService', () => {
     const languageCode = 'en-US';
 
     service.scorePronunciation(audioFile, referenceText, languageCode).subscribe((result) => {
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedDomainResponse);
     });
 
     const req = httpMock.expectOne('/api/pronunciation/score');
@@ -43,11 +56,26 @@ describe('PronunciationService', () => {
     expect(req.request.body.has('audio')).toBeTrue();
     expect(req.request.body.has('referenceText')).toBeTrue();
     expect(req.request.body.has('languageCode')).toBeTrue();
-    req.flush(mockResponse);
+    req.flush(mockApiResponse);
   });
 
   it('should send audio and reference text for alignment scoring and return PronunciationEvaluationResult', () => {
-    const mockResponse: PronunciationEvaluationResult = {
+    const mockApiResponse: PronunciationEvaluationResult = {
+      transcript: 'hello world',
+      words: [
+        {
+          word: 'hello',
+          startTime: 0.0,
+          endTime: 0.5,
+          evaluation: 0.85,
+          phonemes: [
+            { phoneme: 'HH', startTime: 0.0, endTime: 0.1, evaluation: 0.9 },
+          ],
+        },
+      ],
+    };
+
+    const expectedDomainResponse: DomainPronunciationEvaluation = {
       transcript: 'hello world',
       words: [
         {
@@ -66,14 +94,14 @@ describe('PronunciationService', () => {
     const referenceText = 'hello world';
 
     service.scorePronunciationWithAlignment(audioFile, referenceText).subscribe((result) => {
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(expectedDomainResponse);
     });
 
     const req = httpMock.expectOne('/api/pronunciation/evaluate-align');
     expect(req.request.method).toBe('POST');
     expect(req.request.body.has('audio')).toBeTrue();
     expect(req.request.body.has('referenceText')).toBeTrue();
-    req.flush(mockResponse);
+    req.flush(mockApiResponse);
   });
 
   it('should handle error response for scorePronunciation', () => {
@@ -84,7 +112,7 @@ describe('PronunciationService', () => {
     service.scorePronunciation(audioFile, referenceText, languageCode).subscribe({
       next: () => fail('Expected error, but got success response'),
       error: (error) => {
-        expect(error.status).toBe(500);
+        expect(error.message).toContain('Server error');
       },
     });
 
@@ -99,7 +127,7 @@ describe('PronunciationService', () => {
     service.scorePronunciationWithAlignment(audioFile, referenceText).subscribe({
       next: () => fail('Expected error, but got success response'),
       error: (error) => {
-        expect(error.status).toBe(400);
+        expect(error.message).toContain('Invalid request');
       },
     });
 

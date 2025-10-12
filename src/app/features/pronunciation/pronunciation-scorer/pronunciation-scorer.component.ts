@@ -9,7 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { DetailedAnalysisDto } from '../../../core/models/pronunciation.model';
+import { PronunciationAnalysis } from '../../../core/models/domain/pronunciation.domain';
 import { PronunciationService, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../../core/services/pronunciation.service';
 
 @Component({
@@ -38,7 +38,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
   audioUrl = signal<string | null>(null);
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
-  detailedAnalysis = signal<DetailedAnalysisDto | null>(null);
+  detailedAnalysis = signal<PronunciationAnalysis | null>(null);
 
   mediaRecorder: MediaRecorder | null = null;
   audioChunks: Blob[] = [];

@@ -150,8 +150,8 @@
                 <div class="metric"><span class="label">Substitutions</span><span class="value">{{ detailedAnalysis()!.substitutions }}</span></div>
                 <div class="metric"><span class="label">Insertions</span><span class="value">{{ detailedAnalysis()!.insertions }}</span></div>
                 <div class="metric"><span class="label">Deletions</span><span class="value">{{ detailedAnalysis()!.deletions }}</span></div>
-                @if (detailedAnalysis()!.totalDurationSec) {
-                  <div class="metric"><span class="label">Duration</span><span class="value">{{ formatSec(detailedAnalysis()!.totalDurationSec) }}</span></div>
+                @if (detailedAnalysis()!.totalDuration) {
+                  <div class="metric"><span class="label">Duration</span><span class="value">{{ formatSec(detailedAnalysis()!.totalDuration) }}</span></div>
                 }
                 @if (detailedAnalysis()!.speechRateWpm) {
                   <div class="metric"><span class="label">WPM</span><span class="value">{{ detailedAnalysis()!.speechRateWpm!.toFixed(0) }}</span></div>
@@ -178,8 +178,8 @@
                         @if (word.evaluation != null) {
                           <span class="confidence">Score: {{ ((word.evaluation || 0) * 100).toFixed(0) }}%</span>
                         }
-                        @if (word.durationSec != null) {
-                          <span class="confidence">Duration: {{ word.durationSec!.toFixed(2) }}s</span>
+                        @if (word.duration != null) {
+                          <span class="confidence">Duration: {{ word.duration!.toFixed(2) }}s</span>
                         }
                       </div>
                       @if (word.phonemes?.length) {
@@ -201,10 +201,10 @@
                 <div class="pauses glass-surface">
                   <h3>Pauses</h3>
                   <div class="pause-list">
-                    @for (p of detailedAnalysis()!.pauses; track p.startTimeSec) {
+                    @for (p of detailedAnalysis()!.pauses; track p.startTime) {
                       <div class="pause-item">
-                        <span class="chip">{{ formatSec(p.startTimeSec) }} - {{ formatSec(p.endTimeSec) }}</span>
-                        <span class="muted"> ({{ p.durationSec.toFixed(2) }}s)</span>
+                        <span class="chip">{{ formatSec(p.startTime) }} - {{ formatSec(p.endTime) }}</span>
+                        <span class="muted"> ({{ p.duration.toFixed(2) }}s)</span>
                         @if (p.precedingWord || p.followingWord) {
                           <span class="muted"> between {{ p.precedingWord || '...' }} and {{ p.followingWord || '...' }}</span>
                         }
