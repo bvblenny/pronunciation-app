@@ -63,9 +63,32 @@ Errors handled in UI for common cases:
 ## Notable implementation notes
 
 - Angular 20 standalone components with signals for simple state management
-- PronunciationService wraps all API calls and centralizes endpoints
+- **Layered Architecture**: Clean separation between API, business logic, and presentation
+  - API clients handle HTTP communication
+  - Adapters translate between API contracts and domain models
+  - Services contain business logic using domain models
+  - Components use domain models, not API types
 - Timestamps: helper ensures ms/second inputs render correctly as mm:ss
 - Media resources (Object URLs) are always revoked to avoid leaks
+
+## Architecture
+
+The app uses a modern layered architecture for maintainability and flexibility:
+
+```
+Components → Services → Adapters → API Clients → Backend
+                ↓           ↓
+           Domain Models  API Models
+```
+
+**Key features:**
+- ✅ API abstraction layer for centralized endpoint configuration
+- ✅ Adapter pattern isolates API changes from components
+- ✅ Domain models represent business logic independently of API
+- ✅ Centralized error handling across all API calls
+- ✅ Ready for API versioning and future enhancements
+
+See `ARCHITECTURE_IMPROVEMENTS.md` and `docs/MIGRATION_GUIDE.md` for details.
 
 ## Troubleshooting
 
