@@ -31,7 +31,11 @@
             ],
             "styles": [
               "src/styles.scss"
-            ]
+            ],
+            "inlineStyleLanguage": "scss",
+            "optimization": {
+              "fonts": false
+            }
           },
           "configurations": {
             "production": {
