@@ -138,11 +138,14 @@ export class LiveTranscriberComponent implements OnDestroy, OnInit {
     navigator.clipboard?.writeText(this.fullTranscript());
   }
 
-  formatMs(ms: number): string {
-    if (!ms || ms < 0) return '0:00';
-
-    const minutes = Math.floor(ms / (1000 * 60)) % 60;
-    const seconds = Math.floor(ms / 1000) % 60;
+  formatMs(ms: number | string): string {
+    const n = Number(ms);
+    if (!isFinite(n) || n < 0) return '0:00';
+    // support seconds inputs by converting values < 1000 (and >0) to ms
+    const msVal = n > 0 && n < 1000 ? n * 1000 : n;
+    const totalSec = Math.floor(msVal / 1000);
+    const minutes = Math.floor(totalSec / 60);
+    const seconds = totalSec % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 

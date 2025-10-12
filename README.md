@@ -1,108 +1,80 @@
-# Pronunciation App (Frontend)
+# Pronunciation App (Angular 20)
 
-A lightweight Angular 20 web UI for the Pronunciation Service backend.
+A lightweight, mobile‑first language learning frontend with a modern, glassy light theme. It helps you:
+- Record or upload audio and get a detailed pronunciation analysis (WER, per‑word scores, phonemes, pauses)
+- Transcribe audio or video files and interact with the transcript
+- Live transcribe microphone input in the browser (when supported)
 
-Backend repo: https://github.com/bvblenny/pronunciation-service
+## Quick start
 
-## Tech stack:
-* Angular 20, 
-* Angular Material, 
-* [CMU Sphinx](https://github.com/cmusphinx/sphinx4), 
-* Web Speech API,
-* Google Cloud Speech-to-Text
+1) Install and run the backend (Spring Boot Kotlin) locally on port 8080.
+2) Install frontend deps:
+
+```
+npm install
+```
+
+3) Start the dev server with proxy to the backend:
+
+```
+npm run start:proxy
+```
+
+Open https://localhost:4200 (or http://localhost:4200 if not using SSL) in your browser.
 
 ## Features
 
 - Pronunciation Scorer
-  - Record from microphone or upload an audio file
-  - Provide reference text and select a language
-  - Get an overall score plus per-word and per-phoneme details (alignment view)
-- Live Transcription
-  - Live browser speech recognition (where supported)
-  - Upload audio/video to transcribe via backend endpoint
-  - Copy transcript or listen via speech synthesis
+  - Record via mic or upload an audio file
+  - Sends audio to /api/pronunciation/analyze-detailed and renders:
+    - Overall score ring (derived from per‑word evaluation or 1 − WER)
+    - WER, substitutions, insertions, deletions
+    - Transcript text
+    - Per‑word analysis: error type (MATCH/SUBSTITUTION/INSERTION/DELETION), optional evaluation %, duration, phonemes
+    - Pauses with start/end timestamps and durations
+- Transcription
+  - Upload audio/video to /api/transcription/transcribe and display transcript + segments with timestamps
+  - Browser live transcription using the Web Speech API (fallback to file upload if unsupported)
 
-## Prerequisites
+## API contracts used
 
-- Node.js 18+ (LTS recommended) and npm
-- Angular CLI (optional but handy):
-  ```bash
-  npm install -g @angular/cli
-  ```
-- Running backend (default: http://localhost:8080)
-  - See: https://github.com/bvblenny/pronunciation-service
+- POST /api/pronunciation/analyze-detailed
+  - query: referenceText (required), languageCode (optional, default en‑US)
+  - body: multipart/form‑data, part name: audio (binary)
+  - response: DetailedAnalysisDto
+- POST /api/transcription/transcribe
+  - query: languageCode (optional, default en‑US)
+  - body: multipart/form‑data, part name: file (binary)
+  - response: { transcript: string, segments?: [{ text, startMs, endMs }] }
+- GET /api/transcription/languages → [{ code, name }]
 
-## Quickstart
+Errors handled in UI for common cases:
+- 400 invalid/missing file or unsupported media type
+- 413 payload too large
+- 500 generic failure
 
-1) Install dependencies
-```bash
-npm install
-```
+## UI/UX and theme
 
-2) Configure the dev proxy (recommended)
-```bash
-cp proxy.conf.sample.json proxy.conf.json
-# adjust target if your backend is not on http://localhost:8080
-```
+- Light, minimal, glassy look inspired by modern chat UIs
+- Compact spacing, mobile‑first layouts, accessible controls and roles
+- Global CSS variables in src/styles.scss control colors, glass effect, spacing, and radii
+- Header simplified and slightly emphasized for structure and familiarity
 
-3) Start the app (with proxy)
-```bash
-npm run start:proxy
-```
+## Notable implementation notes
 
-- Or without proxy:
-```bash
-npm start
-```
-Then open http://localhost:4200/
+- Angular 20 standalone components with signals for simple state management
+- PronunciationService wraps all API calls and centralizes endpoints
+- Timestamps: helper ensures ms/second inputs render correctly as mm:ss
+- Media resources (Object URLs) are always revoked to avoid leaks
 
-### Optional: LAN HTTPS dev server
-- Put your local certs in `certs/` (ignored by Git), e.g. `cert.pem` and `cert-key.pem`.
-- Update the `start:lan` script in `package.json` to point to your files if names differ.
-- Run:
-```bash
-npm run start:lan
-```
+## Troubleshooting
 
-## Scripts
+- If the backend is not on http://localhost:8080, update proxy.conf.json or start with a different proxy.
+- Browser speech recognition (live transcription) isn’t available in all browsers; use the upload path instead.
+- CORS/proxy: use `npm run start:proxy` during development.
 
-- `npm start` — ng serve
-- `npm run start:proxy` — ng serve with proxy.conf.json
-- `npm run start:lan` — dev server bound to 0.0.0.0 over HTTPS (edit cert paths as needed)
-- `npm run build` — production build
-- `npm run watch` — dev build in watch mode
-- `npm test` — unit tests (Karma/Jasmine)
+## Next steps (optional)
 
-## Configuration
-
-- API base path
-  - Frontend expects endpoints under `/api/...` and forwards via the dev proxy to the backend.
-
-## Expected API Endpoints
-
-This app calls the Pronunciation Service with the following routes (payloads inferred from the UI):
-
-- POST `/api/pronunciation/score`
-  - FormData: `audio` (File), `referenceText` (string), `languageCode` (string, e.g. `en-US`)
-  - Returns: `{ score: number, transcribedText: string, wordDetails: Array<...> }`
-- POST `/api/pronunciation/evaluate-align`
-  - FormData: `audio` (File), `referenceText` (string)
-  - Returns: `{ transcript: string, words: [{ word, startTime, endTime, evaluation, phonemes: [...] }] }`
-- POST `/api/transcription/transcribe`
-  - FormData: `file` (File), `languageCode` (string, optional)
-  - Returns: `{ transcript: string, segments?: [{ text, startMs, endMs }] }`
-- GET `/api/transcription/languages`
-  - Returns: `[{ code: string, name: string }]`
-
-See backend for authoritative API contracts and examples.
-
-## Testing
-
-```bash
-npm test
-```
-
-## License
-
-MIT License
-
+- Add E2E tests for the scorer and transcription flows
+- Persist recent analyses locally (IndexedDB) for quick comparisons
+- Offer inline editing of the reference text with suggested corrections
