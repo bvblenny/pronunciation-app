@@ -175,7 +175,6 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
 
   getOverallScore(): number {
     const analysisResult = this.detailedAnalysis();
-    console.log(JSON.stringify(analysisResult));
 
     if (!analysisResult) return 0;
     const evaluatedWords = analysisResult.words?.filter(word => typeof word.evaluation === 'number') || [];
