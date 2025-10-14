@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { PronunciationService, TranscriptionLanguage, TranscriptionResponse, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../core/services/pronunciation.service';
 
 interface TranscriptSegment { text: string; at: number; }
@@ -25,6 +26,7 @@ interface TranscriptSegment { text: string; at: number; }
     MatInputModule,
     MatSelectModule,
     MatProgressBarModule,
+    MatTooltipModule,
   ],
   templateUrl: './live-transcriber.component.html',
   styleUrl: './live-transcriber.component.scss'

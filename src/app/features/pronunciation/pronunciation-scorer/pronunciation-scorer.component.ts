@@ -213,6 +213,46 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
     return Math.max(0, Math.min(1, n));
   }
 
+  getScoreGradient(score: number): string {
+    if (score >= 0.9) {
+      return 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'; // green gradient
+    } else if (score >= 0.75) {
+      return 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)'; // blue gradient
+    } else if (score >= 0.6) {
+      return 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'; // amber gradient
+    } else {
+      return 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)'; // red gradient
+    }
+  }
+
+  getScoreRating(score: number): string {
+    if (score >= 0.9) return 'Excellent! 🎉';
+    if (score >= 0.75) return 'Great Job! 👏';
+    if (score >= 0.6) return 'Good Effort 👍';
+    if (score >= 0.4) return 'Keep Practicing 💪';
+    return 'Needs Work 📚';
+  }
+
+  getScoreMessage(score: number): string {
+    if (score >= 0.9) return 'Outstanding pronunciation! You\'ve mastered this text.';
+    if (score >= 0.75) return 'Very good pronunciation with minor areas for improvement.';
+    if (score >= 0.6) return 'Decent pronunciation, but there\'s room for improvement.';
+    if (score >= 0.4) return 'Keep practicing! Focus on the highlighted words.';
+    return 'Significant improvements needed. Practice slowly and carefully.';
+  }
+
+  getPhonemeBackground(evaluation: number): string {
+    if (evaluation >= 0.8) {
+      return 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
+    } else if (evaluation >= 0.6) {
+      return 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)';
+    } else if (evaluation >= 0.4) {
+      return 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)';
+    } else {
+      return 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
+    }
+  }
+
   resetForm() {
     this.referenceText.set('');
     this.audioBlob.set(null);
@@ -229,4 +269,3 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
     this.errorMessage.set(null);
   }
 }
-
