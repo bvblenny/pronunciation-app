@@ -31,7 +31,7 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-full);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--accent-primary);
   margin-bottom: var(--space-4);
   animation: slideIn 0.6s ease-out 0.2s both;
@@ -44,8 +44,9 @@
 
 .hero-title {
   font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
   margin-bottom: var(--space-3);
   background: var(--gradient-primary);
   -webkit-background-clip: text;
@@ -56,8 +57,9 @@
 
 .hero-subtitle {
   font-size: 1.125rem;
+  font-weight: var(--font-weight-regular);
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
   animation: fadeIn 0.8s ease-out 0.4s both;
 }
 
@@ -204,7 +206,9 @@
   padding: var(--space-4) var(--space-5);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-6);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
+  font-size: 0.9375rem;
+  line-height: var(--line-height-snug);
   animation: slideIn 0.3s ease-out;
 }
 
@@ -212,6 +216,10 @@
   background: var(--error-bg);
   color: var(--error);
   border: 1px solid var(--error);
+}
+
+.alert mat-icon {
+  flex-shrink: 0;
 }
 
 /* Action Buttons */
@@ -456,12 +464,21 @@
 
 .transcript-text {
   font-size: 1.125rem;
-  line-height: 1.8;
+  line-height: var(--line-height-relaxed);
+  font-weight: var(--font-weight-regular);
   color: var(--text-primary);
-  padding: var(--space-5);
-  background: rgba(245, 245, 247, 0.8);
+  padding: var(--space-6);
+  background: var(--bg-secondary);
   border-radius: var(--radius-md);
   border-left: 4px solid var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-color-scheme: dark) {
+  .transcript-text {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
 }
 
 /* Word Analysis Card */
