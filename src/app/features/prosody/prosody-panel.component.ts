@@ -16,6 +16,14 @@ export class ProsodyPanelComponent {
   @Input({ required: true }) score: ProsodyScoreDto | null = null;
   @Input() title: string = 'Prosody Analysis';
 
+  get currentScore(): ProsodyScoreDto | null {
+    return this.score;
+  }
+
+  get hasScore(): boolean {
+    return this.score !== null;
+  }
+
   overallPct(): number {
     return Math.round((this.score?.overallScore ?? 0) * 100);
   }

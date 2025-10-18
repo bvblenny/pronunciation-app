@@ -1,11 +1,11 @@
-<div class="prosody-card glass-surface-strong" *ngIf="score as s">
+<div class="prosody-card glass-surface-strong" *ngIf="hasScore">
   <div class="card-header">
     <mat-icon>graphic_eq</mat-icon>
     <h3>{{ title }}</h3>
   </div>
 
   <div class="prosody-summary">
-    <div class="score-circle" [style.background]="scoreGradient(s.overallScore)">
+    <div class="score-circle" [style.background]="scoreGradient(currentScore!.overallScore)">
       <div class="score-circle-inner">
         <span class="score-value">{{ overallPct() }}</span>
         <span class="score-label">/ 100</span>
@@ -40,14 +40,14 @@
       <div class="diag-metrics">
         <div class="metric-row">
           <span class="metric-name">Isochrony</span>
-          <span class="metric-val">{{ s.diagnostics.rhythmMetrics.isochronyIndex | number:'1.2-2' }}</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.rhythmMetrics.isochronyIndex | number:'1.2-2' }}</span>
         </div>
         <div class="metric-row">
           <span class="metric-name">Timing Var.</span>
-          <span class="metric-val">{{ s.diagnostics.rhythmMetrics.syllableTimingVariance | number:'1.2-2' }}</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.rhythmMetrics.syllableTimingVariance | number:'1.2-2' }}</span>
         </div>
       </div>
-      <div class="diag-interpretation">{{ s.diagnostics.rhythmMetrics.interpretation }}</div>
+      <div class="diag-interpretation">{{ currentScore!.diagnostics.rhythmMetrics.interpretation }}</div>
     </div>
 
     <div class="diagnostic-item" tabindex="0">
@@ -60,14 +60,14 @@
       <div class="diag-metrics">
         <div class="metric-row">
           <span class="metric-name">Pitch Range</span>
-          <span class="metric-val">{{ s.diagnostics.intonationMetrics.pitchRangeHz | number:'1.0-0' }} Hz</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.intonationMetrics.pitchRangeHz | number:'1.0-0' }} Hz</span>
         </div>
         <div class="metric-row">
           <span class="metric-name">Variation</span>
-          <span class="metric-val">{{ s.diagnostics.intonationMetrics.pitchVariationCoefficient | number:'1.2-2' }}</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.intonationMetrics.pitchVariationCoefficient | number:'1.2-2' }}</span>
         </div>
       </div>
-      <div class="diag-interpretation">{{ s.diagnostics.intonationMetrics.interpretation }}</div>
+      <div class="diag-interpretation">{{ currentScore!.diagnostics.intonationMetrics.interpretation }}</div>
     </div>
 
     <div class="diagnostic-item" tabindex="0">
@@ -80,14 +80,14 @@
       <div class="diag-metrics">
         <div class="metric-row">
           <span class="metric-name">Placement</span>
-          <span class="metric-val">{{ s.diagnostics.stressMetrics.stressPlacementAccuracy | number:'1.0-0' }}</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.stressMetrics.stressPlacementAccuracy | number:'1.0-0' }}</span>
         </div>
         <div class="metric-row">
           <span class="metric-name">Contrast</span>
-          <span class="metric-val">{{ s.diagnostics.stressMetrics.energyContrastRatio | number:'1.2-2' }}</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.stressMetrics.energyContrastRatio | number:'1.2-2' }}</span>
         </div>
       </div>
-      <div class="diag-interpretation">{{ s.diagnostics.stressMetrics.interpretation }}</div>
+      <div class="diag-interpretation">{{ currentScore!.diagnostics.stressMetrics.interpretation }}</div>
     </div>
 
     <div class="diagnostic-item" tabindex="0">
@@ -100,14 +100,14 @@
       <div class="diag-metrics">
         <div class="metric-row">
           <span class="metric-name">WPM</span>
-          <span class="metric-val">{{ s.diagnostics.pacingMetrics.wordsPerMinute | number:'1.0-0' }}</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.pacingMetrics.wordsPerMinute | number:'1.0-0' }}</span>
         </div>
         <div class="metric-row">
           <span class="metric-name">Syll/sec</span>
-          <span class="metric-val">{{ s.diagnostics.pacingMetrics.syllablesPerSecond | number:'1.1-1' }}</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.pacingMetrics.syllablesPerSecond | number:'1.1-1' }}</span>
         </div>
       </div>
-      <div class="diag-interpretation">{{ s.diagnostics.pacingMetrics.interpretation }}</div>
+      <div class="diag-interpretation">{{ currentScore!.diagnostics.pacingMetrics.interpretation }}</div>
     </div>
 
     <div class="diagnostic-item" tabindex="0">
@@ -120,24 +120,24 @@
       <div class="diag-metrics">
         <div class="metric-row">
           <span class="metric-name">Pauses</span>
-          <span class="metric-val">{{ s.diagnostics.fluencyMetrics.pauseCount }} <span class="sub-val">({{ s.diagnostics.fluencyMetrics.longPauseCount }} long)</span></span>
+          <span class="metric-val">{{ currentScore!.diagnostics.fluencyMetrics.pauseCount }} <span class="sub-val">({{ currentScore!.diagnostics.fluencyMetrics.longPauseCount }} long)</span></span>
         </div>
         <div class="metric-row">
           <span class="metric-name">Avg Duration</span>
-          <span class="metric-val">{{ s.diagnostics.fluencyMetrics.averagePauseDurationSec | number:'1.2-2' }}s</span>
+          <span class="metric-val">{{ currentScore!.diagnostics.fluencyMetrics.averagePauseDurationSec | number:'1.2-2' }}s</span>
         </div>
       </div>
-      <div class="diag-interpretation">{{ s.diagnostics.fluencyMetrics.interpretation }}</div>
+      <div class="diag-interpretation">{{ currentScore!.diagnostics.fluencyMetrics.interpretation }}</div>
     </div>
   </div>
 
-  <div class="feedback-list" *ngIf="s.feedback?.length">
+  <div class="feedback-list" *ngIf="currentScore!.feedback?.length">
     <h4 class="feedback-heading">
       <mat-icon>lightbulb</mat-icon>
       Personalized Feedback
     </h4>
     <div class="feedback-item"
-         *ngFor="let f of s.feedback"
+         *ngFor="let f of currentScore!.feedback"
          [class]="'feedback-item feedback-' + f.severity.toLowerCase()"
          tabindex="0">
       <div class="feedback-header">
