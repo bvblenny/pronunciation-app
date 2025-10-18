@@ -9,8 +9,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { DetailedAnalysisDto } from '../../../core/models/pronunciation.model';
+import { DetailedAnalysisDto, ProsodyScoreDto } from '../../../core/models/pronunciation.model';
 import { PronunciationService, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../../core/services/pronunciation.service';
+import { ProsodyPanelComponent } from '../../prosody/prosody-panel.component';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pronunciation-scorer',
@@ -25,7 +28,8 @@ import { PronunciationService, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../../
     MatCardModule,
     MatProgressBarModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    ProsodyPanelComponent
   ],
   templateUrl: './pronunciation-scorer.component.html',
   styleUrl: './pronunciation-scorer.component.scss'
@@ -39,6 +43,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
   detailedAnalysis = signal<DetailedAnalysisDto | null>(null);
+  prosodyScore = signal<ProsodyScoreDto | null>(null);
 
   mediaRecorder: MediaRecorder | null = null;
   audioChunks: Blob[] = [];
@@ -92,6 +97,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       this.audioBlob.set(null);
       this.audioUrl.set(null);
       this.detailedAnalysis.set(null);
+      this.prosodyScore.set(null);
 
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.mediaRecorder = new MediaRecorder(stream);
@@ -140,6 +146,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       this.audioBlob.set(file);
       this.audioUrl.set(URL.createObjectURL(file));
       this.detailedAnalysis.set(null);
+      this.prosodyScore.set(null);
     }
   }
 
@@ -156,13 +163,21 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.pronunciationService.analyzeDetailed(
-      this.audioBlob()!,
-      this.referenceText(),
-      this.languageCode()
-    ).subscribe({
-      next: (result) => {
-        this.detailedAnalysis.set(result);
+    const audio = this.audioBlob()!;
+    const ref = this.referenceText();
+    const lang = this.languageCode();
+
+    const detailed$ = this.pronunciationService.analyzeDetailed(audio, ref, lang);
+    const prosody$ = this.pronunciationService.evaluateProsody(audio, ref, lang)
+      .pipe(catchError(err => {
+        console.warn('Prosody evaluation failed', err);
+        return of(null);
+      }));
+
+    forkJoin({ detailed: detailed$, prosody: prosody$ }).subscribe({
+      next: ({ detailed, prosody }) => {
+        this.detailedAnalysis.set(detailed);
+        this.prosodyScore.set(prosody);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -182,23 +197,14 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       const total = evaluatedWords.reduce((sum, w) => sum + (w.evaluation as number), 0);
       return this.clamp01(total / evaluatedWords.length);
     }
-    if (typeof analysisResult.wer === 'number') {
-      return this.clamp01(1 - analysisResult.wer);
-    }
-    return 0;
+    // wer is always a number per model
+    return this.clamp01(1 - analysisResult.wer);
   }
 
   getScoreColor(score: number): string {
     if (score >= 0.8) return 'var(--primary)';
     if (score >= 0.6) return '#f59e0b'; // amber-500
     return '#ef4444'; // red-500
-  }
-
-  getRingStyle(score: number): string {
-    const pct = Math.max(0, Math.min(1, score)) * 100;
-    const color = this.getScoreColor(score);
-    const track = 'rgba(2,6,23,0.08)';
-    return `conic-gradient(${color} ${pct}%, ${track} ${pct}% 100%)`;
   }
 
   formatSec(sec?: number): string {
@@ -265,7 +271,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
     }
     this.audioUrl.set(null);
     this.detailedAnalysis.set(null);
-    this.errorMessage.set(null);
+    this.prosodyScore.set(null);
     this.errorMessage.set(null);
   }
 }

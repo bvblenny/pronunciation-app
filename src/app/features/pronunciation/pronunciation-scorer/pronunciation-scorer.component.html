@@ -206,10 +206,13 @@
           </div>
           <div class="metric-content">
             <span class="metric-label">Pauses</span>
-            <span class="metric-value">{{ detailedAnalysis()!.pauses?.length || 0 }}</span>
+            <span class="metric-value">{{ detailedAnalysis()!.pauses.length }}</span>
           </div>
         </div>
       </div>
+
+      <!-- Prosody Analysis (New) -->
+      <app-prosody-panel class="elevate" *ngIf="prosodyScore()" [score]="prosodyScore()" title="Prosody Analysis"></app-prosody-panel>
 
       <!-- Transcript Card -->
       <div class="transcript-card glass-surface-strong">
@@ -227,37 +230,72 @@
           <h3>Word-by-Word Analysis</h3>
         </div>
 
-        <div class="word-grid">
+        <div class="word-grid-compact">
           @for (word of detailedAnalysis()!.words; track word.index) {
-            <div class="word-card"
+            <div class="word-item"
                  [class.word-error]="word.errorType !== 'MATCH' || (word.evaluation ?? 1) < 0.8"
-                 [class.word-perfect]="word.errorType === 'MATCH' && (word.evaluation ?? 1) >= 0.95">
-              <div class="word-header">
-                <span class="word-text">{{ word.actual || word.expected }}</span>
+                 [class.word-warning]="word.errorType === 'MATCH' && (word.evaluation ?? 1) >= 0.8 && (word.evaluation ?? 1) < 0.95"
+                 [class.word-perfect]="word.errorType === 'MATCH' && (word.evaluation ?? 1) >= 0.95"
+                 tabindex="0"
+                 role="button"
+                 [attr.aria-label]="'Word: ' + (word.actual || word.expected) + ', Score: ' + ((word.evaluation ?? 1) * 100).toFixed(0) + '%'">
+
+              <!-- Primary: Word + Score (Most Important) -->
+              <div class="word-primary">
+                <span class="word-text" [title]="word.expected ? (word.actual + ' → ' + word.expected) : word.actual">
+                  {{ word.actual || word.expected }}
+                </span>
                 @if (word.evaluation != null) {
-                  <span class="word-score" [style.color]="getScoreColor(word.evaluation)">
+                  <span class="word-score" [style.background]="getScoreGradient(word.evaluation)">
                     {{ (word.evaluation * 100).toFixed(0) }}%
                   </span>
                 }
               </div>
 
-              @if (word.errorType !== 'MATCH') {
-                <span class="word-badge badge-error">{{ word.errorType }}</span>
-              }
+              <!-- Secondary: Status (Important) -->
+              <div class="word-secondary">
+                @if (word.errorType !== 'MATCH') {
+                  <span class="status-indicator error">
+                    <mat-icon>close</mat-icon>
+                    {{ word.errorType }}
+                  </span>
+                } @else {
+                  <span class="status-indicator success">
+                    <mat-icon>check</mat-icon>
+                    Perfect match
+                  </span>
+                }
+              </div>
 
-              @if (word.durationSec != null) {
-                <span class="word-meta">{{ word.durationSec.toFixed(2) }}s</span>
-              }
+              <!-- Tertiary: Additional Info (Less Important) -->
+              <div class="word-meta">
+                @if (word.durationSec != null) {
+                  <span class="meta-item">
+                    <mat-icon>schedule</mat-icon>
+                    {{ word.durationSec.toFixed(2) }}s
+                  </span>
+                }
+                @if (word.phonemes?.length) {
+                  <span class="meta-item">
+                    <mat-icon>graphic_eq</mat-icon>
+                    {{ word.phonemes?.length }} sounds
+                  </span>
+                }
+              </div>
 
+              <!-- Phonemes Detail (Expandable on hover) -->
               @if (word.phonemes?.length) {
-                <div class="phoneme-list">
-                  @for (phoneme of word.phonemes; track phoneme.phoneme) {
-                    <span class="phoneme-badge"
-                          [style.background]="getPhonemeBackground(phoneme.evaluation)"
-                          [title]="phoneme.phoneme + ': ' + (phoneme.evaluation * 100).toFixed(0) + '%'">
-                      {{ phoneme.phoneme }}
-                    </span>
-                  }
+                <div class="phonemes-detail">
+                  <div class="phonemes-label">Pronunciation sounds:</div>
+                  <div class="phonemes-row">
+                    @for (phoneme of word.phonemes; track phoneme.phoneme) {
+                      <span class="phoneme-chip"
+                            [style.background]="getPhonemeBackground(phoneme.evaluation)"
+                            [title]="'Sound: ' + phoneme.phoneme + ' - Accuracy: ' + (phoneme.evaluation * 100).toFixed(0) + '%'">
+                        {{ phoneme.phoneme }}
+                      </span>
+                    }
+                  </div>
                 </div>
               }
             </div>
@@ -266,7 +304,7 @@
       </div>
 
       <!-- Pauses Analysis -->
-      @if (detailedAnalysis()!.pauses?.length) {
+      @if (detailedAnalysis()!.pauses.length) {
         <div class="pauses-card glass-surface-strong">
           <div class="card-header">
             <mat-icon>timer_off</mat-icon>
