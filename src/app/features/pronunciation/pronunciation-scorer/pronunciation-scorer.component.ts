@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,7 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { DetailedAnalysisDto, ProsodyScoreDto } from '../../../core/models/pronunciation.model';
-import { PronunciationService, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../../core/services/pronunciation.service';
+import { PronunciationService } from '../../../core/services/pronunciation.service';
 import { ProsodyPanelComponent } from '../../prosody/prosody-panel.component';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -34,7 +34,9 @@ import { catchError } from 'rxjs/operators';
   templateUrl: './pronunciation-scorer.component.html',
   styleUrl: './pronunciation-scorer.component.scss'
 })
-export class PronunciationScorerComponent implements OnInit, OnDestroy {
+export class PronunciationScorerComponent implements OnDestroy {
+  private readonly pronunciationService = inject(PronunciationService);
+
   referenceText = signal('');
   languageCode = signal('en-US');
   isRecording = signal(false);
@@ -48,21 +50,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
   mediaRecorder: MediaRecorder | null = null;
   audioChunks: Blob[] = [];
 
-  languageOptions: { code: string; name: string }[] = [];
-
-  constructor(private pronunciationService: PronunciationService) {
-  }
-
-  ngOnInit(): void {
-    this.pronunciationService.getTranscriptionLanguages().subscribe({
-      next: langs => {
-        this.languageOptions = (langs && langs.length) ? langs : [...DEFAULT_TRANSCRIPTION_LANGUAGES];
-      },
-      error: () => {
-        this.languageOptions = [...DEFAULT_TRANSCRIPTION_LANGUAGES];
-      }
-    });
-  }
+  languageOptions = this.pronunciationService.getLanguagesSignal();
 
   ngOnDestroy(): void {
     if (this.mediaRecorder) {

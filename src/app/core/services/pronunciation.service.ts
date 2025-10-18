@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {PronunciationEvaluationResult, PronunciationScore, DetailedAnalysisDto, ProsodyScoreDto, ProsodyFeatures} from '../models/pronunciation.model';
@@ -19,7 +19,31 @@ export const DEFAULT_TRANSCRIPTION_LANGUAGES: ReadonlyArray<TranscriptionLanguag
   providedIn: 'root'
 })
 export class PronunciationService {
-  constructor(private http: HttpClient) {}
+  // Cache languages as a signal
+  private languagesCache = signal<TranscriptionLanguage[]>([]);
+
+  constructor(private http: HttpClient) {
+    // Pre-load languages
+    this.loadLanguages();
+  }
+
+  private loadLanguages(): void {
+    this.http.get<TranscriptionLanguage[]>(`/api/transcription/languages`).subscribe({
+      next: (langs) => {
+        this.languagesCache.set(langs && langs.length ? langs : [...DEFAULT_TRANSCRIPTION_LANGUAGES]);
+      },
+      error: () => {
+        this.languagesCache.set([...DEFAULT_TRANSCRIPTION_LANGUAGES]);
+      }
+    });
+  }
+
+  /**
+   * Get cached languages as a signal
+   */
+  getLanguagesSignal() {
+    return this.languagesCache.asReadonly();
+  }
 
   /**
    * Sends audio file, reference text, and language code to the server for pronunciation scoring
@@ -95,6 +119,7 @@ export class PronunciationService {
 
   /**
    * Fetch available transcription languages from backend.
+   * @deprecated Use getLanguagesSignal() instead for reactive updates
    */
   getTranscriptionLanguages(): Observable<TranscriptionLanguage[]> {
     return this.http.get<TranscriptionLanguage[]>(`/api/transcription/languages`);

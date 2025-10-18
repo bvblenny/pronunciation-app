@@ -39,7 +39,7 @@
           [ngModel]="languageCode()"
           (ngModelChange)="languageCode.set($event)"
           aria-label="Language selection">
-          @for (option of languageOptions; track option.code) {
+          @for (option of languageOptions(); track option.code) {
             <mat-option [value]="option.code">{{ option.name }}</mat-option>
           }
         </mat-select>
@@ -212,7 +212,9 @@
       </div>
 
       <!-- Prosody Analysis (New) -->
-      <app-prosody-panel class="elevate" *ngIf="prosodyScore()" [score]="prosodyScore()" title="Prosody Analysis"></app-prosody-panel>
+      @if (prosodyScore()) {
+        <app-prosody-panel class="elevate" [score]="prosodyScore()" title="Prosody Analysis"></app-prosody-panel>
+      }
 
       <!-- Transcript Card -->
       <div class="transcript-card glass-surface-strong">

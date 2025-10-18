@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,23 +13,22 @@ import { ProsodyScoreDto } from '../../core/models/pronunciation.model';
   styleUrl: './prosody-panel.component.scss'
 })
 export class ProsodyPanelComponent {
-  @Input({ required: true }) score: ProsodyScoreDto | null = null;
+  @Input({ required: true }) set score(value: ProsodyScoreDto | null) {
+    this.scoreSignal.set(value);
+  }
   @Input() title: string = 'Prosody Analysis';
 
-  get currentScore(): ProsodyScoreDto | null {
-    return this.score;
-  }
+  private scoreSignal = signal<ProsodyScoreDto | null>(null);
 
-  get hasScore(): boolean {
-    return this.score !== null;
-  }
+  currentScore = computed(() => this.scoreSignal());
+  hasScore = computed(() => this.scoreSignal() !== null);
 
-  overallPct(): number {
-    return Math.round((this.score?.overallScore ?? 0) * 100);
-  }
+  overallPct = computed(() => {
+    return Math.round((this.scoreSignal()?.overallScore ?? 0) * 100);
+  });
 
-  subScores() {
-    const s = this.score?.subScores;
+  subScores = computed(() => {
+    const s = this.scoreSignal()?.subScores;
     if (!s) return [] as Array<{ key: string; label: string; value: number }>;
     return [
       { key: 'rhythm', label: 'Rhythm', value: s.rhythm },
@@ -38,7 +37,7 @@ export class ProsodyPanelComponent {
       { key: 'pacing', label: 'Pacing', value: s.pacing },
       { key: 'fluency', label: 'Fluency', value: s.fluency },
     ];
-  }
+  });
 
   severityClass(sev?: string): string {
     switch (sev) {
