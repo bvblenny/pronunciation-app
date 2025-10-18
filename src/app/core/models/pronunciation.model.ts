@@ -31,7 +31,6 @@ export interface WordDetail {
   expectedWord: string | null;
 }
 
-// New models aligned with DetailedAnalysisDto from backend
 export type WordErrorType = 'MATCH' | 'SUBSTITUTION' | 'INSERTION' | 'DELETION';
 
 export interface PauseDto {
@@ -68,9 +67,6 @@ export interface DetailedAnalysisDto {
   words: WordAnalysisDto[];
 }
 
-// ===============================
-// Prosody Models (from OpenAPI)
-// ===============================
 export interface PitchPoint {
   timeSec: number;
   frequencyHz: number;
