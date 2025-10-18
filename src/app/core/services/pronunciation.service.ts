@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import {PronunciationEvaluationResult, PronunciationScore, DetailedAnalysisDto} from '../models/pronunciation.model';
+import {PronunciationEvaluationResult, PronunciationScore, DetailedAnalysisDto, ProsodyScoreDto, ProsodyFeatures} from '../models/pronunciation.model';
 
 export interface TranscriptionLanguage { code: string; name: string }
 export interface TranscriptionSegment { text: string; startMs: number; endMs: number }
@@ -61,6 +61,24 @@ export class PronunciationService {
     // referenceText and languageCode are query params per OpenAPI
     const params = new URLSearchParams({ referenceText, languageCode });
     return this.http.post<DetailedAnalysisDto>(`/api/pronunciation/analyze-detailed?${params.toString()}`, form);
+  }
+
+  /** Prosody: evaluate suprasegmental features returning scores + diagnostics */
+  evaluateProsody(audio: File, referenceText: string = '', languageCode: string = 'en-US'):
+    Observable<ProsodyScoreDto> {
+    const form = new FormData();
+    form.append('audio', audio);
+    const params = new URLSearchParams();
+    if (referenceText != null) params.set('referenceText', referenceText);
+    if (languageCode != null) params.set('languageCode', languageCode);
+    return this.http.post<ProsodyScoreDto>(`/api/prosody/evaluate?${params.toString()}`, form);
+  }
+
+  /** Prosody: extract raw features (pitch, energy, timings) */
+  extractProsodyFeatures(audio: File): Observable<ProsodyFeatures> {
+    const form = new FormData();
+    form.append('audio', audio);
+    return this.http.post<ProsodyFeatures>(`/api/prosody/features`, form);
   }
 
   /**
