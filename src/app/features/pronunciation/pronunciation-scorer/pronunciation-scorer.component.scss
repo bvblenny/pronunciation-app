@@ -938,11 +938,9 @@
   z-index: 10;
 }
 
-/* Stagger animation for phoneme chips */
-@for $i from 1 through 20 {
-  .phonemes-row .phoneme-chip:nth-child(#{$i}) {
-    animation: slideInUp 0.3s ease-out #{$i * 0.03}s both;
-  }
+/* Stagger animation for phoneme chips using CSS custom property */
+.phonemes-row .phoneme-chip {
+  animation: slideInUp 0.3s ease-out var(--delay, 0s) both;
 }
 
 @keyframes slideInUp {
