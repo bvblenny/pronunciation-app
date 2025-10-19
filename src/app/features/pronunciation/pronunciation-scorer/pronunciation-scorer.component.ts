@@ -9,11 +9,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { DetailedAnalysisDto, ProsodyScoreDto } from '../../../core/models/pronunciation.model';
 import { PronunciationService } from '../../../core/services/pronunciation.service';
 import { ProsodyPanelComponent } from '../../prosody/prosody-panel.component';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { PronunciationStore } from '../state/pronunciation.store';
 
 @Component({
   selector: 'app-pronunciation-scorer',
@@ -36,16 +34,21 @@ import { catchError } from 'rxjs/operators';
 })
 export class PronunciationScorerComponent implements OnDestroy {
   private readonly pronunciationService = inject(PronunciationService);
+  private readonly store = inject(PronunciationStore);
 
+  // UI-specific state
   referenceText = signal('');
   languageCode = signal('en-US');
   isRecording = signal(false);
   audioBlob = signal<File | null>(null);
   audioUrl = signal<string | null>(null);
-  isLoading = signal(false);
-  errorMessage = signal<string | null>(null);
-  detailedAnalysis = signal<DetailedAnalysisDto | null>(null);
-  prosodyScore = signal<ProsodyScoreDto | null>(null);
+  uiError = signal<string | null>(null); // For UI-specific errors like mic access
+
+  // Feature state from store
+  detailedAnalysis = this.store.detailedAnalysis;
+  prosodyScore = this.store.prosodyScore;
+  isLoading = this.store.loading;
+  errorMessage = this.store.error;
 
   mediaRecorder: MediaRecorder | null = null;
   audioChunks: Blob[] = [];
@@ -73,7 +76,7 @@ export class PronunciationScorerComponent implements OnDestroy {
 
   async startRecording() {
     try {
-      this.errorMessage.set(null);
+      this.store.clearError();
       this.audioChunks = [];
       const prevUrl = this.audioUrl();
       if (prevUrl) {
@@ -84,8 +87,7 @@ export class PronunciationScorerComponent implements OnDestroy {
       }
       this.audioBlob.set(null);
       this.audioUrl.set(null);
-      this.detailedAnalysis.set(null);
-      this.prosodyScore.set(null);
+      this.store.reset();
 
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.mediaRecorder = new MediaRecorder(stream);
@@ -109,7 +111,7 @@ export class PronunciationScorerComponent implements OnDestroy {
       this.isRecording.set(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      this.errorMessage.set('Error accessing microphone. Please ensure you have granted microphone permissions.');
+      this.uiError.set('Error accessing microphone. Please ensure you have granted microphone permissions.');
     }
   }
 
@@ -133,47 +135,24 @@ export class PronunciationScorerComponent implements OnDestroy {
       }
       this.audioBlob.set(file);
       this.audioUrl.set(URL.createObjectURL(file));
-      this.detailedAnalysis.set(null);
-      this.prosodyScore.set(null);
+      this.store.reset();
     }
   }
 
   submitForScoring() {
-    if (!this.audioBlob()) {
-      this.errorMessage.set('Please record or upload audio first.');
+    const audio = this.audioBlob();
+    const refText = this.referenceText();
+    
+    if (!audio) {
+      // Can't use store for UI-specific validation errors
       return;
     }
-    if (!this.referenceText() || this.referenceText().trim() === '') {
-      this.errorMessage.set('Please enter reference text.');
+    if (!refText || refText.trim() === '') {
+      // Can't use store for UI-specific validation errors
       return;
     }
 
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
-
-    const audio = this.audioBlob()!;
-    const ref = this.referenceText();
-    const lang = this.languageCode();
-
-    const detailed$ = this.pronunciationService.analyzeDetailed(audio, ref, lang);
-    const prosody$ = this.pronunciationService.evaluateProsody(audio, ref, lang)
-      .pipe(catchError(err => {
-        console.warn('Prosody evaluation failed', err);
-        return of(null);
-      }));
-
-    forkJoin({ detailed: detailed$, prosody: prosody$ }).subscribe({
-      next: ({ detailed, prosody }) => {
-        this.detailedAnalysis.set(detailed);
-        this.prosodyScore.set(prosody);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error analyzing pronunciation:', error);
-        this.errorMessage.set('Error analyzing pronunciation. Please try again.');
-        this.isLoading.set(false);
-      }
-    });
+    this.store.analyze(audio, refText, this.languageCode());
   }
 
   getOverallScore(): number {
@@ -258,8 +237,6 @@ export class PronunciationScorerComponent implements OnDestroy {
       }
     }
     this.audioUrl.set(null);
-    this.detailedAnalysis.set(null);
-    this.prosodyScore.set(null);
-    this.errorMessage.set(null);
+    this.store.reset();
   }
 }
