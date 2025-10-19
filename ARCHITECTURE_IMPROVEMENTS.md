@@ -9,7 +9,7 @@ The improvements focus on:
 2. **State Management** - Centralizing feature state using Angular signals
 3. **Error Handling** - Providing user-friendly error messages via HTTP interceptor
 4. **Code Organization** - Clear module boundaries with barrel exports
-5. **Modern Angular Patterns** - Leveraging Angular 20 features (signals, inject function)
+5. **Modern Angular Patterns** - Leveraging signals (Angular 16+), inject function (Angular 14+), and standalone components (Angular 14+)
 
 ## Architecture Layers
 
@@ -169,9 +169,10 @@ export class PronunciationScorerComponent {
 ```
 
 **Component Complexity Reduction:**
-- Before: ~260 lines with complex state management
-- After: ~120 lines focused on UI logic
+The pronunciation scorer component was significantly simplified by extracting state management to a store:
 - Removed: Manual subscription handling, duplicate error handling, loading state management
+- State logic moved to dedicated store for reusability
+- Component now focuses on UI presentation and user interaction
 
 ### 3. HTTP Error Interceptor
 
@@ -240,20 +241,24 @@ import { PronunciationService } from './core/services';
 import { DetailedAnalysisDto } from './core/models';
 ```
 
-### 5. Modern Angular 20 Patterns
+### 5. Modern Angular Patterns
 
-#### Signals in Templates
-Fixed improper signal usage:
+While the app uses Angular 20.1.0, these patterns were introduced in earlier versions and represent modern Angular development:
+
+#### Signals in Templates (Angular 16+)
+Fixed improper signal usage - signals must be called as functions:
 
 ```typescript
-// Before (incorrect)
+// Before (incorrect - not calling signal as function)
 {{ currentScore!.overallScore }}
 
-// After (correct)
+// After (correct - calling signal as function)
 {{ currentScore()!.overallScore }}
 ```
 
-#### Inject Function
+In Angular, computed signals like `currentScore` must be invoked with `()` to access their value.
+
+#### Inject Function (Angular 14+)
 Consistent use of `inject()` instead of constructor injection:
 
 ```typescript
@@ -264,7 +269,7 @@ export class MyComponent {
 }
 ```
 
-#### Standalone Components
+#### Standalone Components (Angular 14+)
 All components are standalone, reducing module complexity:
 
 ```typescript
