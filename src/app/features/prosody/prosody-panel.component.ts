@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { ProsodyScoreDto } from '../../core/models/pronunciation.model';
+import { ProsodyScoreDto } from '../../core/models';
 
 @Component({
   selector: 'app-prosody-panel',

@@ -108,10 +108,10 @@
     </section>
 
     <!-- Error Message -->
-    @if (errorMessage()) {
+    @if (errorMessage() || uiError()) {
       <div class="alert alert-error" role="alert">
         <mat-icon>error_outline</mat-icon>
-        <span>{{ errorMessage() }}</span>
+        <span>{{ errorMessage() || uiError() }}</span>
       </div>
     }
 
