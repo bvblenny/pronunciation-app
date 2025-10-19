@@ -4,20 +4,32 @@
   min-height: 100vh;
 }
 
-/* ========================================
-   Header - Premium Design
-   ======================================== */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--blur-lg));
-  -webkit-backdrop-filter: blur(var(--blur-lg));
-  border-bottom: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 8px 32px 0 rgba(31, 38, 135, 0.15),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   padding: var(--space-4) 0;
   transition: all var(--transition-base);
+}
+
+.app-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
 }
 
 .header-content {
@@ -27,7 +39,6 @@
   gap: var(--space-6);
 }
 
-/* Brand Section */
 .brand {
   display: flex;
   align-items: center;
@@ -148,14 +159,12 @@
   color: white;
 }
 
-/* Main Content */
 .app-content {
   flex: 1;
   padding: var(--space-12) 0;
   animation: fadeIn 0.8s ease-out 0.3s both;
 }
 
-/* Footer */
 .app-footer {
   padding: var(--space-8) 0;
   background: var(--glass-bg);
@@ -188,7 +197,6 @@
   text-decoration: underline;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .app-header {
     padding: var(--space-3) 0;

@@ -99,7 +99,7 @@
         <h2>Transcript</h2>
         <div class="transcript-actions">
           <button
-            mat-icon-button
+            matIconButton
             class="icon-btn"
             (click)="copy()"
             [disabled]="!fullTranscript()"
@@ -115,7 +115,7 @@
             <mat-icon>volume_up</mat-icon>
           </button>
           <button
-            mat-icon-button
+            matIconButton
             class="icon-btn"
             (click)="clear()"
             [disabled]="segments().length === 0 && !interim()"
@@ -133,17 +133,23 @@
             <span>Start speaking or upload a file to begin</span>
           </div>
         } @else {
-          <div class="segment-list">
+          <div class="transcript-container">
             @for (s of segments(); track s.at) {
-              <div class="segment-item" (click)="speak(s.text)">
-                <span class="segment-timestamp">{{ formatMs(s.at) }}</span>
-                <p class="segment-text">{{ s.text }}</p>
+              <div class="transcript-item" (click)="speak(s.text)">
+                <div class="transcript-meta">
+                  <span class="transcript-timestamp">{{ formatMs(s.at) }}</span>
+                  <div class="transcript-connector"></div>
+                </div>
+                <p class="transcript-text">{{ s.text }}</p>
               </div>
             }
             @if (interim()) {
-              <div class="segment-item interim-segment">
-                <span class="segment-timestamp">Live</span>
-                <p class="segment-text interim">{{ interim() }}</p>
+              <div class="transcript-item interim-item">
+                <div class="transcript-meta">
+                  <span class="transcript-timestamp">Live</span>
+                  <div class="transcript-connector"></div>
+                </div>
+                <p class="transcript-text interim">{{ interim() }}</p>
               </div>
             }
           </div>

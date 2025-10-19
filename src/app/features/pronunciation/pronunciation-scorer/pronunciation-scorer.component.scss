@@ -8,14 +8,10 @@
   animation: fadeIn 0.6s ease-out;
 }
 
-/* ========================================
-   Analysis Card
-   ======================================== */
 .analysis-card {
   padding: var(--space-10);
   margin-bottom: var(--space-8);
   animation: fadeIn 0.8s ease-out 0.5s both;
-  border-radius: var(--radius-xl);
 }
 
 /* Section Headers */
@@ -31,7 +27,7 @@
     font-weight: 600;
     margin: 0;
     color: var(--text-primary);
-    flex: 1; /* Take available space */
+    flex: 1;
   }
 }
 

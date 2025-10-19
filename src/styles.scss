@@ -209,11 +209,24 @@ body {
 
 .glass-surface-strong {
   background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--blur-lg));
-  -webkit-backdrop-filter: blur(var(--blur-lg));
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
 }
 
-/* Elevate Hover Effect */
+.glass-surface-medium {  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 8px 32px 0 rgba(31, 38, 135, 0.15),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
 .elevate {
   transition: transform var(--transition-base), box-shadow var(--transition-base);
   will-change: transform, box-shadow;
@@ -224,7 +237,6 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-/* Chip/Badge Component */
 .chip {
   display: inline-flex;
   align-items: center;
