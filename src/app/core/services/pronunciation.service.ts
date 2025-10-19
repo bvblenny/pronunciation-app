@@ -1,7 +1,18 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Observable, catchError, of } from 'rxjs';
-import { PronunciationApiClient, DEFAULT_TRANSCRIPTION_LANGUAGES, TranscriptionLanguage, TranscriptionResponse } from '../api/pronunciation-api.client';
-import { PronunciationEvaluationResult, PronunciationScore, DetailedAnalysisDto, ProsodyScoreDto, ProsodyFeatures } from '../models/pronunciation.model';
+import {
+  PronunciationApiClient,
+  DEFAULT_TRANSCRIPTION_LANGUAGES,
+  TranscriptionLanguage,
+  TranscriptionResponse
+} from '../api';
+import {
+  PronunciationEvaluationResult,
+  PronunciationScore,
+  DetailedAnalysisDto,
+  ProsodyScoreDto,
+  ProsodyFeatures
+} from '../models';
 
 /**
  * Pronunciation Service

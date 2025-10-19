@@ -4,7 +4,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
-import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { errorInterceptor } from './core/interceptors';
 
 export const appConfig: ApplicationConfig = {
   providers: [

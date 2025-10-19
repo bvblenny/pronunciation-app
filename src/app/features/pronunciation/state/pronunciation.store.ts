@@ -1,8 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { PronunciationService } from '../../../core/services/pronunciation.service';
-import { DetailedAnalysisDto, ProsodyScoreDto } from '../../../core/models/pronunciation.model';
+import { PronunciationService } from '../../../core/services';
+import { DetailedAnalysisDto, ProsodyScoreDto } from '../../../core/models';
 
 /**
  * State interface for pronunciation analysis

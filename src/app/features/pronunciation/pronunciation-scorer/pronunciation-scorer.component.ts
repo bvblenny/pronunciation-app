@@ -9,7 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { PronunciationService } from '../../../core/services/pronunciation.service';
+import { PronunciationService } from '../../../core/services';
 import { ProsodyPanelComponent } from '../../prosody/prosody-panel.component';
 import { PronunciationStore } from '../state/pronunciation.store';
 

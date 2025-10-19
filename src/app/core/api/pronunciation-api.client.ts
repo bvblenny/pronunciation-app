@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiConfigService } from '../config/api-config.service';
+import { ApiConfigService } from '../config';
 import {
   DetailedAnalysisDto,
   PronunciationScore,
   PronunciationEvaluationResult,
   ProsodyScoreDto,
   ProsodyFeatures
-} from '../models/pronunciation.model';
+} from '../models';
 
 /**
  * Request interfaces for API calls

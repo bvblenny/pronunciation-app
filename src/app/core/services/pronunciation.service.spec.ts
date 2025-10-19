@@ -14,6 +14,13 @@ describe('PronunciationService', () => {
     });
     service = TestBed.inject(PronunciationService);
     httpMock = TestBed.inject(HttpTestingController);
+    
+    // Handle the constructor's language loading request
+    const langReq = httpMock.expectOne('/api/transcription/languages');
+    langReq.flush([
+      { code: 'en-US', name: 'English (US)' },
+      { code: 'en-GB', name: 'English (UK)' }
+    ]);
   });
 
   afterEach(() => {
