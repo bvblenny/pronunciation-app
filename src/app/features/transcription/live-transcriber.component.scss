@@ -9,61 +9,6 @@
 }
 
 /* ========================================
-   Hero Section
-   ======================================== */
-.hero-section {
-  text-align: center;
-  margin-bottom: var(--space-12);
-  animation: fadeIn 0.8s ease-out;
-}
-
-.hero-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--info-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-full);
-  font-size: 0.875rem;
-   font-weight: var(--font-weight-semibold);
-  color: var(--info);
-  margin-bottom: var(--space-4);
-  animation: slideIn 0.6s ease-out 0.2s both;
-}
-
-.badge-icon {
-  font-size: 1.25rem;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.hero-title {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: -0.02em;
-  line-height: var(--line-height-tight);
-  margin-bottom: var(--space-3);
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: fadeIn 0.8s ease-out 0.3s both;
-}
-
-.hero-subtitle {
-  font-size: 1.125rem;
-  font-weight: var(--font-weight-regular);
-  color: var(--text-secondary);
-  line-height: var(--line-height-relaxed);
-  animation: fadeIn 0.8s ease-out 0.4s both;
-}
-
-/* ========================================
    Transcription Card
    ======================================== */
 .transcription-card {
@@ -194,7 +139,8 @@
 }
 
 @keyframes wavePulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(0.8);
     opacity: 0.5;
   }
@@ -222,38 +168,8 @@
 }
 
 .upload-button {
-  min-width: 280px;
-  height: 48px;
-}
-
-/* Alert */
-.alert {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-6);
-  font-weight: var(--font-weight-medium);
-  font-size: 0.9375rem;
-  line-height: var(--line-height-snug);
-  animation: slideIn 0.3s ease-out;
-}
-
-.alert-error {
-  background: var(--error-bg);
-  color: var(--error);
-  border: 1px solid var(--error);
-}
-
-.alert-warning {
-  background: var(--warning-bg);
-  color: var(--warning);
-  border: 1px solid var(--warning);
-}
-
-.alert mat-icon {
-  flex-shrink: 0;
+  height: 40px;
+  color: var(--text-primary) !important;
 }
 
 /* Transcribing State */
@@ -280,7 +196,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .transcribing-text {
@@ -402,16 +320,11 @@
     padding: var(--space-6);
   }
 
-  .hero-title {
-    font-size: 2rem;
-  }
-
   .button-group {
     width: 100%;
   }
 
-  .action-button,
-  .upload-button {
+  .action-button {
     width: 100%;
     min-width: auto;
   }
@@ -438,10 +351,6 @@
 }
 
 @media (max-width: 480px) {
-  .hero-badge {
-    font-size: 0.75rem;
-  }
-
   .section-header h2 {
     font-size: 1.25rem;
   }

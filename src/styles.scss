@@ -399,3 +399,122 @@ textarea.mat-mdc-input-element {
 .mat-mdc-select-arrow {
   color: var(--text-secondary) !important;
 }
+
+/* ========================================
+   Reusable Components (App-wide)
+   ======================================== */
+/* Intro Section */
+.intro-section {
+  text-align: center;
+  margin-bottom: var(--space-12);
+  animation: fadeIn 0.8s ease-out;
+}
+
+.intro-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Base layout for badge; color/background via modifiers */
+.intro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-4);
+  animation: slideIn 0.6s ease-out 0.2s both;
+}
+
+.intro-badge--accent { /* default accent look */
+  background: var(--accent-light);
+  color: var(--accent-primary);
+}
+
+.intro-badge--info {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.badge-icon {
+  font-size: 1.25rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.intro-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+  margin-bottom: var(--space-3);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: fadeIn 0.8s ease-out 0.3s both;
+}
+
+.intro-subtitle {
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-regular);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  animation: fadeIn 0.8s ease-out 0.4s both;
+}
+
+@media (max-width: 768px) {
+  .intro-title { font-size: 2rem; }
+}
+
+@media (max-width: 480px) {
+  .intro-badge { font-size: 0.75rem; }
+}
+
+/* Alerts */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  font-weight: var(--font-weight-medium);
+  font-size: 0.9375rem;
+  line-height: var(--line-height-snug);
+  animation: slideIn 0.3s ease-out;
+}
+
+.alert-error {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.alert-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.alert mat-icon { flex-shrink: 0; }
+
+/* ========================================
+   Global Animations
+   ======================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.95; }
+}
