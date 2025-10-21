@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,8 +9,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { DetailedAnalysisDto } from '../../../core/models/pronunciation.model';
-import { PronunciationService, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../../core/services/pronunciation.service';
+import { PronunciationService } from '../../../core/services';
+import { ProsodyPanelComponent } from '../../prosody/prosody-panel.component';
+import { PronunciationStore } from '../state/pronunciation.store';
 
 @Component({
   selector: 'app-pronunciation-scorer',
@@ -25,39 +26,34 @@ import { PronunciationService, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../../
     MatCardModule,
     MatProgressBarModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    ProsodyPanelComponent
   ],
   templateUrl: './pronunciation-scorer.component.html',
   styleUrl: './pronunciation-scorer.component.scss'
 })
-export class PronunciationScorerComponent implements OnInit, OnDestroy {
+export class PronunciationScorerComponent implements OnDestroy {
+  private readonly pronunciationService = inject(PronunciationService);
+  private readonly store = inject(PronunciationStore);
+
+  // UI-specific state
   referenceText = signal('');
   languageCode = signal('en-US');
   isRecording = signal(false);
   audioBlob = signal<File | null>(null);
   audioUrl = signal<string | null>(null);
-  isLoading = signal(false);
-  errorMessage = signal<string | null>(null);
-  detailedAnalysis = signal<DetailedAnalysisDto | null>(null);
+  uiError = signal<string | null>(null); // For UI-specific errors like mic access
+
+  // Feature state from store
+  detailedAnalysis = this.store.detailedAnalysis;
+  prosodyScore = this.store.prosodyScore;
+  isLoading = this.store.loading;
+  errorMessage = this.store.error;
 
   mediaRecorder: MediaRecorder | null = null;
   audioChunks: Blob[] = [];
 
-  languageOptions: { code: string; name: string }[] = [];
-
-  constructor(private pronunciationService: PronunciationService) {
-  }
-
-  ngOnInit(): void {
-    this.pronunciationService.getTranscriptionLanguages().subscribe({
-      next: langs => {
-        this.languageOptions = (langs && langs.length) ? langs : [...DEFAULT_TRANSCRIPTION_LANGUAGES];
-      },
-      error: () => {
-        this.languageOptions = [...DEFAULT_TRANSCRIPTION_LANGUAGES];
-      }
-    });
-  }
+  languageOptions = this.pronunciationService.getLanguagesSignal();
 
   ngOnDestroy(): void {
     if (this.mediaRecorder) {
@@ -80,7 +76,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
 
   async startRecording() {
     try {
-      this.errorMessage.set(null);
+      this.store.clearError();
       this.audioChunks = [];
       const prevUrl = this.audioUrl();
       if (prevUrl) {
@@ -91,7 +87,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       }
       this.audioBlob.set(null);
       this.audioUrl.set(null);
-      this.detailedAnalysis.set(null);
+      this.store.reset();
 
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.mediaRecorder = new MediaRecorder(stream);
@@ -115,7 +111,7 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       this.isRecording.set(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      this.errorMessage.set('Error accessing microphone. Please ensure you have granted microphone permissions.');
+      this.uiError.set('Error accessing microphone. Please ensure you have granted microphone permissions.');
     }
   }
 
@@ -139,38 +135,24 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       }
       this.audioBlob.set(file);
       this.audioUrl.set(URL.createObjectURL(file));
-      this.detailedAnalysis.set(null);
+      this.store.reset();
     }
   }
 
   submitForScoring() {
-    if (!this.audioBlob()) {
-      this.errorMessage.set('Please record or upload audio first.');
+    const audio = this.audioBlob();
+    const refText = this.referenceText();
+    
+    if (!audio) {
+      // Can't use store for UI-specific validation errors
       return;
     }
-    if (!this.referenceText() || this.referenceText().trim() === '') {
-      this.errorMessage.set('Please enter reference text.');
+    if (!refText || refText.trim() === '') {
+      // Can't use store for UI-specific validation errors
       return;
     }
 
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
-
-    this.pronunciationService.analyzeDetailed(
-      this.audioBlob()!,
-      this.referenceText(),
-      this.languageCode()
-    ).subscribe({
-      next: (result) => {
-        this.detailedAnalysis.set(result);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error analyzing pronunciation:', error);
-        this.errorMessage.set('Error analyzing pronunciation. Please try again.');
-        this.isLoading.set(false);
-      }
-    });
+    this.store.analyze(audio, refText, this.languageCode());
   }
 
   getOverallScore(): number {
@@ -182,23 +164,14 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       const total = evaluatedWords.reduce((sum, w) => sum + (w.evaluation as number), 0);
       return this.clamp01(total / evaluatedWords.length);
     }
-    if (typeof analysisResult.wer === 'number') {
-      return this.clamp01(1 - analysisResult.wer);
-    }
-    return 0;
+    // wer is always a number per model
+    return this.clamp01(1 - analysisResult.wer);
   }
 
   getScoreColor(score: number): string {
     if (score >= 0.8) return 'var(--primary)';
     if (score >= 0.6) return '#f59e0b'; // amber-500
     return '#ef4444'; // red-500
-  }
-
-  getRingStyle(score: number): string {
-    const pct = Math.max(0, Math.min(1, score)) * 100;
-    const color = this.getScoreColor(score);
-    const track = 'rgba(2,6,23,0.08)';
-    return `conic-gradient(${color} ${pct}%, ${track} ${pct}% 100%)`;
   }
 
   formatSec(sec?: number): string {
@@ -213,6 +186,46 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
     return Math.max(0, Math.min(1, n));
   }
 
+  getScoreGradient(score: number): string {
+    if (score >= 0.9) {
+      return 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'; // green gradient
+    } else if (score >= 0.75) {
+      return 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)'; // blue gradient
+    } else if (score >= 0.6) {
+      return 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'; // amber gradient
+    } else {
+      return 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)'; // red gradient
+    }
+  }
+
+  getScoreRating(score: number): string {
+    if (score >= 0.9) return 'Excellent! 🎉';
+    if (score >= 0.75) return 'Great Job! 👏';
+    if (score >= 0.6) return 'Good Effort 👍';
+    if (score >= 0.4) return 'Keep Practicing 💪';
+    return 'Needs Work 📚';
+  }
+
+  getScoreMessage(score: number): string {
+    if (score >= 0.9) return 'Outstanding pronunciation! You\'ve mastered this text.';
+    if (score >= 0.75) return 'Very good pronunciation with minor areas for improvement.';
+    if (score >= 0.6) return 'Decent pronunciation, but there\'s room for improvement.';
+    if (score >= 0.4) return 'Keep practicing! Focus on the highlighted words.';
+    return 'Significant improvements needed. Practice slowly and carefully.';
+  }
+
+  getPhonemeBackground(evaluation: number): string {
+    if (evaluation >= 0.8) {
+      return 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
+    } else if (evaluation >= 0.6) {
+      return 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)';
+    } else if (evaluation >= 0.4) {
+      return 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)';
+    } else {
+      return 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)';
+    }
+  }
+
   resetForm() {
     this.referenceText.set('');
     this.audioBlob.set(null);
@@ -224,9 +237,6 @@ export class PronunciationScorerComponent implements OnInit, OnDestroy {
       }
     }
     this.audioUrl.set(null);
-    this.detailedAnalysis.set(null);
-    this.errorMessage.set(null);
-    this.errorMessage.set(null);
+    this.store.reset();
   }
 }
-

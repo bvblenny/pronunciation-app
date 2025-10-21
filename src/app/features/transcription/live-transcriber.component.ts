@@ -1,4 +1,4 @@
-import {Component, OnDestroy, signal, computed, OnInit} from '@angular/core';
+import {Component, OnDestroy, signal, computed, effect, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -8,7 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { PronunciationService, TranscriptionLanguage, TranscriptionResponse, DEFAULT_TRANSCRIPTION_LANGUAGES } from '../../core/services/pronunciation.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { PronunciationService } from '../../core/services';
+import { TranscriptionResponse } from '../../core/api';
 
 interface TranscriptSegment { text: string; at: number; }
 
@@ -25,11 +27,14 @@ interface TranscriptSegment { text: string; at: number; }
     MatInputModule,
     MatSelectModule,
     MatProgressBarModule,
+    MatTooltipModule,
   ],
   templateUrl: './live-transcriber.component.html',
   styleUrl: './live-transcriber.component.scss'
 })
-export class LiveTranscriberComponent implements OnDestroy, OnInit {
+export class LiveTranscriberComponent implements OnDestroy {
+  private readonly svc = inject(PronunciationService);
+
   languageCode = signal<string>('en-US');
   isSupported = signal<boolean>(false);
   isListening = signal<boolean>(false);
@@ -37,7 +42,7 @@ export class LiveTranscriberComponent implements OnDestroy, OnInit {
   segments = signal<TranscriptSegment[]>([]);
   errorMessage = signal<string | null>(null);
   isTranscribing = signal<boolean>(false);
-  languages = signal<TranscriptionLanguage[]>([]);
+  languages = this.svc.getLanguagesSignal();
   private recognition: any | null = null;
   private startedAt = 0;
 
@@ -47,7 +52,7 @@ export class LiveTranscriberComponent implements OnDestroy, OnInit {
     return interim ? text + ' ' + interim : text;
   });
 
-  constructor(private svc: PronunciationService) {
+  constructor() {
     const w = window as any;
     const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -55,7 +60,12 @@ export class LiveTranscriberComponent implements OnDestroy, OnInit {
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
-      this.recognition.lang = this.languageCode();
+
+      effect(() => {
+        if (this.recognition) {
+          this.recognition.lang = this.languageCode();
+        }
+      });
 
       this.recognition.onresult = (event: any) => {
         let interim = '';
@@ -85,17 +95,6 @@ export class LiveTranscriberComponent implements OnDestroy, OnInit {
     } else {
       this.isSupported.set(false);
     }
-  }
-
-  ngOnInit(): void {
-    this.svc.getTranscriptionLanguages().subscribe({
-      next: (langs) => {
-        this.languages.set(langs && langs.length ? langs : [...DEFAULT_TRANSCRIPTION_LANGUAGES]);
-      },
-      error: () => {
-        this.languages.set([...DEFAULT_TRANSCRIPTION_LANGUAGES]);
-      }
-    });
   }
 
   ngOnDestroy(): void {

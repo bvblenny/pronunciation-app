@@ -1,19 +1,32 @@
 <div class="app-container">
-  <header class="app-header glass-surface">
+  <header class="app-header">
     <div class="container header-content">
-      <div class="title">
-        <div class="brand-line">
-          <span class="brand-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-              <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V20H9v2h6v-2h-2v-2.08A7 7 0 0 0 19 11h-2z"/>
-            </svg>
-          </span>
-          <h1>Pronunciation Scorer</h1>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V20H9v2h6v-2h-2v-2.08A7 7 0 0 0 19 11h-2z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">Pronunciation AI</h1>
+          <p class="brand-subtitle">Advanced Speech Analysis</p>
         </div>
       </div>
-      <nav class="header-nav">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Score</a>
-        <a routerLink="/transcribe" routerLinkActive="active">Transcribe</a>
+
+      <nav class="header-nav" role="navigation" aria-label="Main navigation">
+        <a routerLink="/"
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{ exact: true }"
+           class="nav-link">
+          <mat-icon>insights</mat-icon>
+          <span>Analyze</span>
+        </a>
+        <a routerLink="/transcribe"
+           routerLinkActive="active"
+           class="nav-link">
+          <mat-icon>transcribe</mat-icon>
+          <span>Transcribe</span>
+        </a>
       </nav>
     </div>
   </header>
@@ -23,4 +36,11 @@
       <router-outlet></router-outlet>
     </div>
   </main>
+
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <p>Powered by advanced AI • Built with Angular</p>
+      <a href="https://github.com/felipe-b-oliveira/pronunciation-app" target="_blank" rel="noopener" class="footer-link">View on GitHub</a>
+    </div>
+  </footer>
 </div>

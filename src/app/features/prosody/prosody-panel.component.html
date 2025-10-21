@@ -1,0 +1,156 @@
+<div class="prosody-card glass-surface-strong" *ngIf="hasScore">
+  <div class="card-header">
+    <mat-icon>graphic_eq</mat-icon>
+    <h3>{{ title }}</h3>
+  </div>
+
+  <div class="prosody-summary">
+    <div class="score-circle" [style.background]="scoreGradient(currentScore()!.overallScore)">
+      <div class="score-circle-inner">
+        <span class="score-value">{{ overallPct() }}</span>
+        <span class="score-label">/ 100</span>
+      </div>
+    </div>
+
+    <div class="subscores-grid">
+      <div class="subscore-item" *ngFor="let item of subScores()">
+        <div class="subscore-header">
+          <span class="subscore-label">{{ item.label }}</span>
+          <span class="subscore-value">{{ (item.value * 100) | number:'1.0-0' }}%</span>
+        </div>
+        <div class="subscore-bar">
+          <div class="subscore-fill"
+               [style.width.%]="item.value * 100"
+               [style.background]="scoreGradient(item.value)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="diagnostics-grid">
+    <div class="diagnostic-item" tabindex="0">
+      <div class="diag-header">
+        <div class="diag-icon rhythm">
+          <mat-icon>equalizer</mat-icon>
+        </div>
+        <div class="diag-title">Rhythm</div>
+      </div>
+      <div class="diag-metrics">
+        <div class="metric-row">
+          <span class="metric-name">Isochrony</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.rhythmMetrics.isochronyIndex | number:'1.2-2' }}</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Timing Var.</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.rhythmMetrics.syllableTimingVariance | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="diag-interpretation">{{ currentScore()!.diagnostics.rhythmMetrics.interpretation }}</div>
+    </div>
+
+    <div class="diagnostic-item" tabindex="0">
+      <div class="diag-header">
+        <div class="diag-icon intonation">
+          <mat-icon>timeline</mat-icon>
+        </div>
+        <div class="diag-title">Intonation</div>
+      </div>
+      <div class="diag-metrics">
+        <div class="metric-row">
+          <span class="metric-name">Pitch Range</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.intonationMetrics.pitchRangeHz | number:'1.0-0' }} Hz</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Variation</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.intonationMetrics.pitchVariationCoefficient | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="diag-interpretation">{{ currentScore()!.diagnostics.intonationMetrics.interpretation }}</div>
+    </div>
+
+    <div class="diagnostic-item" tabindex="0">
+      <div class="diag-header">
+        <div class="diag-icon stress">
+          <mat-icon>bolt</mat-icon>
+        </div>
+        <div class="diag-title">Stress</div>
+      </div>
+      <div class="diag-metrics">
+        <div class="metric-row">
+          <span class="metric-name">Placement</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.stressMetrics.stressPlacementAccuracy | number:'1.0-0' }}</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Contrast</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.stressMetrics.energyContrastRatio | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="diag-interpretation">{{ currentScore()!.diagnostics.stressMetrics.interpretation }}</div>
+    </div>
+
+    <div class="diagnostic-item" tabindex="0">
+      <div class="diag-header">
+        <div class="diag-icon pacing">
+          <mat-icon>speed</mat-icon>
+        </div>
+        <div class="diag-title">Pacing</div>
+      </div>
+      <div class="diag-metrics">
+        <div class="metric-row">
+          <span class="metric-name">WPM</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.pacingMetrics.wordsPerMinute | number:'1.0-0' }}</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Syll/sec</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.pacingMetrics.syllablesPerSecond | number:'1.1-1' }}</span>
+        </div>
+      </div>
+      <div class="diag-interpretation">{{ currentScore()!.diagnostics.pacingMetrics.interpretation }}</div>
+    </div>
+
+    <div class="diagnostic-item" tabindex="0">
+      <div class="diag-header">
+        <div class="diag-icon fluency">
+          <mat-icon>scatter_plot</mat-icon>
+        </div>
+        <div class="diag-title">Fluency</div>
+      </div>
+      <div class="diag-metrics">
+        <div class="metric-row">
+          <span class="metric-name">Pauses</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.fluencyMetrics.pauseCount }} <span class="sub-val">({{ currentScore()!.diagnostics.fluencyMetrics.longPauseCount }} long)</span></span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Avg Duration</span>
+          <span class="metric-val">{{ currentScore()!.diagnostics.fluencyMetrics.averagePauseDurationSec | number:'1.2-2' }}s</span>
+        </div>
+      </div>
+      <div class="diag-interpretation">{{ currentScore()!.diagnostics.fluencyMetrics.interpretation }}</div>
+    </div>
+  </div>
+
+  <div class="feedback-list" *ngIf="currentScore()!.feedback?.length">
+    <h4 class="feedback-heading">
+      <mat-icon>lightbulb</mat-icon>
+      Personalized Feedback
+    </h4>
+    <div class="feedback-item"
+         *ngFor="let f of currentScore()!.feedback"
+         [class]="'feedback-item feedback-' + f.severity.toLowerCase()"
+         tabindex="0">
+      <div class="feedback-header">
+        <div class="feedback-badge-group">
+          <span class="feedback-category">{{ f.category }}</span>
+          <span class="feedback-severity" [class]="'sev-' + f.severity.toLowerCase()">{{ f.severity }}</span>
+        </div>
+      </div>
+      <div class="feedback-message">{{ f.message }}</div>
+      <div class="feedback-suggestion">
+        <mat-icon>tips_and_updates</mat-icon>
+        <span>{{ f.suggestion }}</span>
+      </div>
+    </div>
+  </div>
+</div>

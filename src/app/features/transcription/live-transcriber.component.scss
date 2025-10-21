@@ -1,64 +1,410 @@
-.live-transcriber-container {
+/* ========================================
+   Live Transcriber - Premium Design
+   ======================================== */
+
+.live-transcriber {
+  max-width: 1000px;
+  margin: 0 auto;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* ========================================
+   Transcription Card
+   ======================================== */
+.transcription-card {
+  padding: var(--space-10);
+  animation: fadeIn 0.8s ease-out 0.5s both;
+}
+
+/* Section Headers */
+.section-header {
   display: flex;
-  justify-content: center;
-  padding: var(--space-6);
-}
-
-@media (max-width: 600px) {
-  .live-transcriber-container { padding: var(--space-4); }
-}
-
-.main-card {
-  width: 100%;
-  max-width: 920px;
-  padding: var(--space-4) var(--space-6);
-}
-
-.section { margin-block: var(--space-5); }
-
-.full-width { width: 100%; }
-
-.controls .buttons {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  position: relative;
+}
+
+.section-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  color: var(--accent-primary);
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.icon-btn {
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}
+
+.transcript-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+/* Controls Section */
+.controls-section {
+  margin-bottom: var(--space-8);
+}
+
+.language-select {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: var(--space-6);
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   align-items: center;
 }
 
-.unsupported { color: var(--muted); }
+.action-button {
+  min-width: 280px;
+  height: 56px;
+  font-size: 1.0625rem;
+  box-shadow: var(--shadow-lg) !important;
+}
 
-.transcript .toolbar {
+.action-button:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: var(--shadow-xl) !important;
+}
+
+.listening-active {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.listening-pulse {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
+  display: inline-block;
+  margin-right: var(--space-2);
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  animation: recordPulse 1.5s infinite;
+}
+
+@keyframes recordPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.listening-indicator {
   display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-  margin-bottom: var(--space-3);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: var(--success-bg);
+  border: 1px solid var(--success);
+  border-radius: var(--radius-full);
+  color: var(--success);
+  font-weight: 600;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.transcript-body {
-  padding: var(--space-4);
-  border-radius: 12px;
-  max-height: 45vh;
-  overflow: auto;
+.listening-wave {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: wavePulse 1.5s ease-in-out infinite;
 }
 
-.segment-list {
+@keyframes wavePulse {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.divider-text {
+  position: relative;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--space-2) 0;
+}
+
+.soft-divider {
+  width: 100%;
+  max-width: 280px;
+  margin: var(--space-2) 0;
+}
+
+.upload-button {
+  height: 40px;
+  color: var(--text-primary) !important;
+}
+
+/* Transcribing State */
+.transcribing-state {
+  padding: var(--space-8) 0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.transcribing-content {
+  background: var(--bg-tertiary);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.transcribing-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--glass-border);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  margin: 0 auto var(--space-4);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.transcribing-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-5);
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--glass-border) 50%, transparent);
+  margin: var(--space-8) 0;
+}
+
+/* ========================================
+   Transcript Display
+   ======================================== */
+.transcript-section {
+  margin-top: var(--space-8);
+}
+
+.transcript-display {
+  min-height: 400px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 8px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  text-align: center;
+  color: var(--text-tertiary);
 }
 
-.segment, .interim {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border);
+.empty-state mat-icon {
+  font-size: 72px;
+  width: 72px;
+  height: 72px;
+  color: var(--glass-border);
+  margin-bottom: var(--space-4);
 }
 
-.segment {
-  background: #fff;
-  cursor: pointer;
-  transition: background-color 150ms ease, transform 150ms ease;
+.empty-state p {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
 }
 
-.segment:hover { background: var(--primary-50); transform: translateY(-1px); }
+.empty-state span {
+  font-size: 0.9375rem;
+  color: var(--text-tertiary);
+}
 
-.interim { background: var(--chip-bg); color: var(--muted); font-style: italic; }
+/* Transcript Timeline Layout */
+.transcript-container {
+  position: relative;
+  padding-left: 70px; /* Space for timestamp and timeline */
+}
+
+/* The vertical timeline bar */
+.transcript-container::before {
+  content: '';
+  position: absolute;
+  left: 30px;
+  top: 20px;
+  bottom: 20px;
+  width: 2px;
+  background: var(--glass-border);
+  border-radius: var(--radius-full);
+}
+
+.transcript-item {
+  display: flex;
+  position: relative;
+  padding: var(--space-2) 0;
+  gap: var(--space-5);
+  transition: background-color var(--transition-fast);
+  border-radius: var(--radius-md);
+}
+
+.transcript-item:hover {
+  background-color: var(--bg-secondary-alpha-heavy);
+}
+
+.transcript-meta {
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.transcript-timestamp {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  width: 60px; /* Fixed width for alignment */
+  text-align: right;
+  margin-right: 10px;
+}
+
+/* The dot on the timeline */
+.transcript-connector {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 3px solid var(--accent-primary);
+  position: absolute;
+  left: 24px; /* (30px from container left) - (12px width / 2) + 3px border */
+  z-index: 1;
+  transition: transform var(--transition-fast);
+}
+
+.transcript-item:hover .transcript-connector {
+  transform: scale(1.2);
+}
+
+.transcript-item.interim-item .transcript-connector {
+  border-color: var(--info);
+}
+
+.transcript-text {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  margin: 0;
+  padding: var(--space-3) 0;
+  flex: 1;
+}
+
+.transcript-text.interim {
+  color: var(--info);
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .transcription-card {
+    padding: var(--space-6);
+  }
+
+  .button-group {
+    width: 100%;
+  }
+
+  .action-button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .language-select {
+    max-width: 80%;
+  }
+
+  .section-header {
+    flex-wrap: wrap;
+  }
+
+  .transcript-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: var(--space-3);
+    margin-left: 0;
+  }
+
+  .transcript-display {
+    min-height: 300px;
+    max-height: 500px;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .transcript-text {
+    font-size: 1rem;
+  }
+}
+
+/* Scrollbar Styling for Transcript */
+.transcript-display::-webkit-scrollbar {
+  width: 8px;
+}
+
+.transcript-display::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+}
+
+.transcript-display::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: var(--radius-full);
+}
+
+.transcript-display::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

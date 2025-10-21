@@ -1,5 +1,4 @@
 # Architecture Analysis: Frontend & Backend Integration
-**Date**: October 12, 2025  
 **Scope**: Angular 20 Frontend (pronunciation-app) & Spring Boot Backend (pronunciation-service)  
 **Objective**: Enable "plug and play" feature integration for simplified architectural evolution
 
@@ -7,617 +6,747 @@
 
 ## Executive Summary
 
-This analysis examines the current architecture of both the Angular 20 frontend and Spring Boot backend, comparing the `master` branch with the `detailed-analysis` branch to understand integration challenges. The goal is to identify improvements that would enable modular, "plug and play" feature integration, reducing friction when adding or modifying APIs and features.
+This analysis examines the current architecture of the Angular 20 frontend after the `detailed-analysis` branch has been **merged into master**. The goal is to identify improvements that would enable modular, "plug and play" feature integration, reducing friction when adding or modifying APIs and features.
 
 ### Key Findings
 
-1. **Tight Coupling**: Frontend components directly depend on specific API response structures, making changes brittle
-2. **Scattered API Contracts**: Type definitions and API endpoints are not centralized, leading to duplication
+1. **Tight Coupling Remains**: Frontend components directly depend on specific API response structures, making changes brittle
+2. **Scattered API Contracts**: Type definitions are centralized in models but API endpoints are hardcoded in services
 3. **No Abstraction Layer**: Direct HTTP calls in services create tight coupling between UI and backend
-4. **Inconsistent State Management**: Mixed use of signals and direct service calls complicates data flow
-5. **Limited Modularity**: Features are not truly independent; shared concerns are duplicated
+4. **Good Use of Modern Patterns**: Angular 20 signals are used effectively, but state management is inconsistent
+5. **Limited Modularity**: Features lack clear boundaries; shared concerns exist but no plugin architecture
 
 ---
 
-## Current Architecture Analysis
+## Current Architecture Analysis (Post-Merge)
 
-### Frontend Architecture (Master Branch)
+### Frontend Architecture (Master Branch - Post Merge)
 
 #### Strengths
-- ✅ Standalone components with Angular 20+ features (signals)
-- ✅ Feature-based folder structure (`features/pronunciation`, `features/transcription`)
-- ✅ Separate core layer for services and models
-- ✅ Type-safe interfaces for API responses
+- ✅ **Modern Angular 20 with Signals**: Effective use of `signal()` and `computed()` for reactive state
+- ✅ **Standalone Components**: All components are standalone, reducing module complexity
+- ✅ **Feature-Based Structure**: Clear separation (`features/pronunciation`, `features/transcription`)
+- ✅ **Material Design**: Consistent use of Angular Material for polished UI
+- ✅ **Type Safety**: Comprehensive TypeScript interfaces in `pronunciation.model.ts`
+- ✅ **Unified Models**: DetailedAnalysisDto is now integrated, providing rich analysis data
 
-#### Weaknesses
+#### Current Structure
+```typescript
+src/app/
+  core/
+    models/
+      pronunciation.model.ts          // All API contracts centralized
+    services/
+      pronunciation.service.ts        // Single service for all pronunciation/transcription APIs
+      error-handler.service.ts        // Global error handler
+  features/
+    pronunciation/
+      pronunciation-scorer/           // Main analysis component
+    transcription/
+      live-transcriber/               // Real-time transcription component
+    prosody/                          // Placeholder for future feature
+```
+
+#### Architectural Weaknesses
 
 **1. Direct Service-to-HTTP Coupling**
 ```typescript
-// pronunciation.service.ts - Direct HTTP calls
-scorePronunciation(audio: File, referenceText: string, languageCode: string = 'en-US'): Observable<PronunciationScore> {
-  const formData = new FormData();
-  formData.append('audio', audio);
-  formData.append('referenceText', referenceText);
-  formData.append('languageCode', languageCode);
-  return this.http.post<PronunciationScore>(`/api/pronunciation/score`, formData);
-}
-```
-**Issue**: Any API endpoint or contract change requires service modification and potentially component updates.
-
-**2. Component-Service Tight Coupling**
-```typescript
-// Components directly call service methods with specific signatures
-this.pronunciationService.scorePronunciationWithAlignment(this.audioBlob()!, this.referenceText())
-```
-**Issue**: Components know too much about service implementation details.
-
-**3. Mixed Type Definitions**
-```typescript
-// Types defined in service file instead of models
-export interface TranscriptionLanguage { code: string; name: string }
-export interface TranscriptionSegment { text: string; startMs: number; endMs: number }
-```
-**Issue**: Breaks single responsibility principle; harder to maintain contracts.
-
-**4. Hardcoded API Endpoints**
-```typescript
-return this.http.post<PronunciationScore>(`/api/pronunciation/score`, formData);
-return this.http.post<PronunciationEvaluationResult>(`/api/pronunciation/evaluate-align`, formData);
-```
-**Issue**: No centralized API configuration; difficult to version or modify endpoints.
-
-**5. No API Abstraction Layer**
-- Services directly return HTTP observables
-- No transformation or adaptation layer
-- No centralized error handling strategy
-- No request/response interceptors for cross-cutting concerns
-
-### Backend Architecture (Master Branch)
-
-#### Strengths
-- ✅ Clean separation: Controller → Service → Model layers
-- ✅ OpenAPI/Swagger documentation
-- ✅ Strategy pattern for transcription providers (Google, Sphinx)
-- ✅ Media normalization layer (ffmpeg abstraction)
-
-#### Weaknesses
-
-**1. Mixed Endpoint Patterns**
-```kotlin
-// Some endpoints use form-data parameters
-@PostMapping("/evaluate-stt", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-fun evaluateSpeechToText(
-    @RequestParam("audio") audioFile: MultipartFile,
-    @RequestParam("referenceText") referenceText: String,
-    @RequestParam("languageCode", defaultValue = "en-US") languageCode: String
-)
-
-// Others use query parameters
-@PostMapping("/analyze-detailed")
-fun analyzeDetailed(
-    @RequestParam("audio") audioFile: MultipartFile,
-    @RequestParam("referenceText") referenceText: String,  // becomes query param
-    @RequestParam("languageCode", defaultValue = "en-US") languageCode: String
-)
-```
-**Issue**: Inconsistent API design makes frontend integration harder; requires different handling strategies.
-
-**2. Lack of API Versioning**
-```kotlin
-@RequestMapping("/api/pronunciation")
-```
-**Issue**: No version prefix (e.g., `/api/v1/pronunciation`) makes breaking changes difficult.
-
-**3. Multiple Response Models for Similar Concepts**
-- `PronunciationScoreDto` (master)
-- `PronunciationEvaluationResult` (master)
-- `DetailedAnalysisDto` (detailed-analysis branch)
-
-**Issue**: Proliferation of similar models; unclear which to use when.
-
----
-
-## Integration Pain Points: Master vs. Detailed-Analysis
-
-### Frontend Changes Required (detailed-analysis branch)
-
-**1. New Model Imports**
-```typescript
-// OLD (master)
-import { PronunciationEvaluationResult, PronunciationScore } from '../../../core/models/pronunciation.model';
-
-// NEW (detailed-analysis)
-import { DetailedAnalysisDto } from '../../../core/models/pronunciation.model';
-```
-
-**2. New Service Method**
-```typescript
-// Added in detailed-analysis
-analyzeDetailed(audio: File, referenceText: string, languageCode: string = 'en-US'): Observable<DetailedAnalysisDto> {
+// pronunciation.service.ts - Direct HTTP calls with hardcoded endpoints
+analyzeDetailed(audio: File, referenceText: string, languageCode: string = 'en-US'):
+  Observable<DetailedAnalysisDto> {
   const form = new FormData();
   form.append('audio', audio);
   const params = new URLSearchParams({ referenceText, languageCode });
-  return this.http.post<DetailedAnalysisDto>(`/api/pronunciation/analyze-detailed?${params.toString()}`, form);
+  return this.http.post<DetailedAnalysisDto>(
+    `/api/pronunciation/analyze-detailed?${params.toString()}`, 
+    form
+  );
 }
 ```
+**Issues**:
+- API endpoints are hardcoded strings scattered across service methods
+- No versioning strategy (no `/v1/`, `/v2/` prefixes)
+- Form data construction logic duplicated across methods
+- Query parameter handling inconsistent (some use FormData, some use URLSearchParams)
+- Difficult to mock or swap implementations for testing
 
-**3. Component Refactoring**
+**2. Component-Service Tight Coupling**
 ```typescript
-// Signal type change
-detailedAnalysis = signal<DetailedAnalysisDto | null>(null);  // was pronunciationEvaluation
+// pronunciation-scorer.component.ts
+this.pronunciationService.analyzeDetailed(
+  this.audioBlob()!,
+  this.referenceText(),
+  this.languageCode()
+).subscribe({
+  next: (result) => {
+    this.detailedAnalysis.set(result);  // Direct dependency on API structure
+    this.isLoading.set(false);
+  },
+  error: (error) => {
+    console.error('Error analyzing pronunciation:', error);
+    this.errorMessage.set('Error analyzing pronunciation. Please try again.');
+    this.isLoading.set(false);
+  }
+});
+```
+**Issues**:
+- Components directly subscribe to HTTP observables
+- Error handling duplicated in every component
+- No transformation layer between API responses and component state
+- Components know the exact API response structure (tight coupling)
+- Loading state management repeated across components
 
-// Service call change
-this.pronunciationService.analyzeDetailed(/* params */)  // was scorePronunciationWithAlignment
+**3. Mixed Responsibilities in Service**
+```typescript
+// pronunciation.service.ts contains both API calls AND type definitions
+export interface TranscriptionLanguage { code: string; name: string }
+export interface TranscriptionSegment { text: string; startMs: number; endMs: number }
+export interface TranscriptionResponse { transcript: string; segments?: TranscriptionSegment[] }
+
+export const DEFAULT_TRANSCRIPTION_LANGUAGES: ReadonlyArray<TranscriptionLanguage> = [
+  { code: 'en-US', name: 'English (US)' },
+  // ...
+];
+```
+**Issues**:
+- Type definitions mixed with service logic violates SRP
+- Constants defined in service files instead of configuration
+- Difficult to share types across features
+- No clear API contract ownership
+
+**4. Lack of API Abstraction Strategy**
+Current pattern:
+```
+Component → Service → HttpClient → Backend
 ```
 
-**4. Template Updates**
-- Field name changes (`pronunciationEvaluation()` → `detailedAnalysis()`)
-- New data structure access patterns (`words` array structure changed)
-- Additional fields like `wer`, `pauses`, `speechRateWpm`
+**Problems**:
+- Any API change ripples through service → component → template
+- No adapter/facade pattern to isolate changes
+- No centralized request/response transformation
+- No unified error handling strategy
+- Cannot easily version or deprecate APIs
 
-### Key Integration Challenges
+**5. State Management Inconsistency**
+```typescript
+// Components manage their own state with signals
+detailedAnalysis = signal<DetailedAnalysisDto | null>(null);
+isLoading = signal(false);
+errorMessage = signal<string | null>(null);
+```
+**Issues**:
+- State management logic duplicated across components
+- No single source of truth for feature state
+- Difficult to implement cross-component features (e.g., undo/redo, state persistence)
+- Testing requires component instantiation
 
-1. **Breaking Changes**: Master → detailed-analysis requires component rewrites
-2. **No Backward Compatibility**: Old API methods can't coexist with new ones gracefully
-3. **Ripple Effects**: API change affects service → component → template
-4. **Testing Burden**: All layers need test updates for any API change
-5. **Migration Complexity**: No clear upgrade path for existing deployments
+**6. No Feature Plugin Architecture**
+```typescript
+// Current route structure is flat
+export const routes: Routes = [
+  { path: '', component: PronunciationScorerComponent },
+  { path: 'transcribe', loadComponent: () => import('./features/transcription/...') },
+];
+```
+**Issues**:
+- Routes are manually defined in a central file
+- No dynamic feature loading/unloading
+- Cannot enable/disable features via configuration
+- Difficult to create feature-specific builds
+
+### Backend Integration Challenges
+
+Based on the frontend code, we can infer backend characteristics:
+
+**1. Inconsistent Parameter Patterns**
+```typescript
+// Some endpoints use form data for all parameters
+scorePronunciation(audio: File, referenceText: string, languageCode: string)
+  → FormData with all three
+
+// Others mix form data + query parameters
+analyzeDetailed(audio: File, referenceText: string, languageCode: string)
+  → FormData for audio, query params for text/language
+```
+
+**2. No Explicit API Versioning**
+```typescript
+// All endpoints at /api/* with no version prefix
+return this.http.post<T>(`/api/pronunciation/score`, ...);
+return this.http.post<T>(`/api/pronunciation/analyze-detailed`, ...);
+```
+
+**3. Multiple Models for Similar Concepts**
+- `PronunciationScore` (simple scoring)
+- `PronunciationEvaluationResult` (with alignment)
+- `DetailedAnalysisDto` (comprehensive analysis)
+
+**Issue**: No clear upgrade path or backward compatibility strategy
 
 ---
 
-## Recommendations for "Plug and Play" Architecture
+## Recommended Architecture Improvements
 
-### Frontend Recommendations
+### Phase 1: API Abstraction Layer (High Priority)
 
-#### 1. **Introduce API Abstraction Layer**
+#### 1.1 Create API Client Layer
 
-Create a dedicated API client layer to decouple HTTP details from business logic:
+**Goal**: Decouple HTTP details from business logic
 
 ```typescript
-// NEW: api/pronunciation-api.client.ts
+// NEW: core/api/pronunciation-api.client.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+export interface ApiConfig {
+  baseUrl: string;
+  version: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PronunciationApiClient {
-  private readonly baseUrl = '/api/pronunciation';
+  private config: ApiConfig = { baseUrl: '/api', version: 'v1' };
   
-  constructor(private http: HttpClient, private config: ApiConfigService) {}
+  constructor(private http: HttpClient) {}
   
-  scorePronunciation(request: ScorePronunciationRequest): Observable<PronunciationResponse> {
-    const endpoint = this.config.getEndpoint('pronunciation.score');
-    return this.http.post<PronunciationResponse>(endpoint, this.toFormData(request))
-      .pipe(catchError(this.handleError));
+  analyzeDetailed(request: AnalyzeDetailedRequest): Observable<DetailedAnalysisResponse> {
+    const endpoint = `${this.config.baseUrl}/pronunciation/analyze-detailed`;
+    return this.http.post<DetailedAnalysisResponse>(endpoint, this.toFormData(request));
   }
   
-  private toFormData(request: any): FormData { /* centralized form data creation */ }
-  private handleError(error: HttpErrorResponse): Observable<never> { /* centralized error handling */ }
+  private toFormData(request: any): FormData {
+    const form = new FormData();
+    Object.entries(request).forEach(([key, value]) => {
+      if (value instanceof File) {
+        form.append(key, value);
+      } else if (value != null) {
+        form.append(key, String(value));
+      }
+    });
+    return form;
+  }
 }
 ```
 
 **Benefits**:
-- Centralized HTTP logic
-- Easy to swap implementations (mock, v1, v2)
-- Single place for error handling
-- Simpler service layer testing
+- Centralized endpoint management
+- Easy to add versioning (`/api/v2/...`)
+- Single place to modify request construction
+- Simplified testing with mock implementation
 
-#### 2. **Implement Adapter Pattern for API Contracts**
+#### 1.2 Implement Adapter Pattern
 
-Create adapters to translate between API responses and domain models:
+**Goal**: Translate between API DTOs and domain models
 
 ```typescript
-// NEW: api/adapters/pronunciation-adapter.ts
-export class PronunciationAdapter {
-  static toDomain(apiResponse: PronunciationApiResponse): PronunciationResult {
-    return {
-      overallScore: apiResponse.score,
-      transcript: apiResponse.transcribedText,
-      wordAnalysis: apiResponse.words.map(this.mapWord)
-    };
-  }
+// NEW: core/api/adapters/pronunciation.adapter.ts
+export interface PronunciationAnalysis {
+  overallScore: number;
+  wer: number;
+  transcript: string;
+  referenceText: string;
+  metrics: {
+    substitutions: number;
+    insertions: number;
+    deletions: number;
+    duration?: number;
+    speechRate?: number;
+  };
+  words: WordAnalysis[];
+  pauses: Pause[];
 }
 
-// Service uses domain models, not API models
-export class PronunciationService {
-  analyze(audio: File, text: string): Observable<PronunciationResult> {
-    return this.apiClient.scorePronunciation({ audio, text })
-      .pipe(map(response => PronunciationAdapter.toDomain(response)));
+export class PronunciationAdapter {
+  static toDomain(apiResponse: DetailedAnalysisDto): PronunciationAnalysis {
+    return {
+      overallScore: this.calculateScore(apiResponse),
+      wer: apiResponse.wer,
+      transcript: apiResponse.transcript,
+      referenceText: apiResponse.referenceText,
+      metrics: {
+        substitutions: apiResponse.substitutions,
+        insertions: apiResponse.insertions,
+        deletions: apiResponse.deletions,
+        duration: apiResponse.totalDurationSec,
+        speechRate: apiResponse.speechRateWpm,
+      },
+      words: apiResponse.words.map(this.mapWord),
+      pauses: apiResponse.pauses.map(this.mapPause),
+    };
+  }
+  
+  private static calculateScore(dto: DetailedAnalysisDto): number {
+    // Business logic for score calculation
+    const evaluatedWords = dto.words.filter(w => w.evaluation != null);
+    if (evaluatedWords.length === 0) return 1 - dto.wer;
+    return evaluatedWords.reduce((sum, w) => sum + w.evaluation!, 0) / evaluatedWords.length;
   }
 }
 ```
 
 **Benefits**:
 - API changes don't affect components
-- Easy to support multiple API versions simultaneously
-- Clear separation of concerns
-- Components work with domain models, not API contracts
+- Domain models are independent of backend structure
+- Business logic (score calculation) centralized
+- Easy to support multiple API versions
 
-#### 3. **Centralize API Configuration**
+#### 1.3 Create Feature Service Layer
 
-Create a configuration service for all API endpoints:
+**Goal**: Provide domain-focused API to components
 
 ```typescript
-// NEW: api/api-config.service.ts
+// REFACTOR: core/services/pronunciation.service.ts
 @Injectable({ providedIn: 'root' })
-export class ApiConfigService {
-  private endpoints = {
-    'pronunciation.score': '/api/v1/pronunciation/score',
-    'pronunciation.detailed': '/api/v1/pronunciation/analyze-detailed',
-    'transcription.transcribe': '/api/v1/transcription/transcribe'
-  };
+export class PronunciationService {
+  constructor(
+    private apiClient: PronunciationApiClient,
+    private adapter: PronunciationAdapter
+  ) {}
   
-  getEndpoint(key: string): string {
-    return this.endpoints[key] || this.fallback(key);
+  analyzePronunciation(
+    audio: File,
+    referenceText: string,
+    options: { languageCode?: string } = {}
+  ): Observable<PronunciationAnalysis> {
+    return this.apiClient.analyzeDetailed({
+      audio,
+      referenceText,
+      languageCode: options.languageCode ?? 'en-US'
+    }).pipe(
+      map(response => this.adapter.toDomain(response)),
+      catchError(error => this.handleError(error))
+    );
   }
   
-  // Support for feature flags, A/B testing, etc.
-  useFeature(feature: string): boolean { /* ... */ }
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    // Centralized error handling with user-friendly messages
+    const message = this.getUserFriendlyMessage(error);
+    return throwError(() => new Error(message));
+  }
 }
 ```
 
 **Benefits**:
-- Easy endpoint versioning
-- Feature flag support
-- Environment-specific configuration
-- Single source of truth
+- Components call domain methods, not HTTP methods
+- Centralized error handling
+- Easy to add caching, retry logic, etc.
+- Clear separation: API Client (HTTP) vs Service (Domain)
 
-#### 4. **Implement Feature Modules**
+### Phase 2: State Management Pattern (High Priority)
 
-Structure features as self-contained modules with clear boundaries:
+#### 2.1 Create Feature Store
 
-```
-features/
-  pronunciation/
-    api/                      # Feature-specific API layer
-      pronunciation.api.ts
-      pronunciation.adapter.ts
-    models/                   # Feature domain models
-      pronunciation.model.ts
-    services/                 # Feature business logic
-      pronunciation.service.ts
-    components/               # Feature UI components
-      pronunciation-scorer/
-    pronunciation.routes.ts   # Feature routes
-    pronunciation.module.ts   # Optional: feature configuration
-```
-
-**Benefits**:
-- Features can be added/removed easily
-- Clear dependencies
-- Independent versioning
-- Lazy loading support
-
-#### 5. **Use State Management Pattern**
-
-Implement a lightweight state management approach:
+**Goal**: Centralize feature state and actions
 
 ```typescript
 // NEW: features/pronunciation/state/pronunciation.store.ts
+import { Injectable, signal, computed } from '@angular/core';
+
+interface PronunciationState {
+  analysis: PronunciationAnalysis | null;
+  loading: boolean;
+  error: string | null;
+  history: PronunciationAnalysis[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class PronunciationStore {
   private state = signal<PronunciationState>({
     analysis: null,
     loading: false,
-    error: null
+    error: null,
+    history: []
   });
   
-  // Read-only selectors
+  // Selectors
   readonly analysis = computed(() => this.state().analysis);
   readonly loading = computed(() => this.state().loading);
+  readonly error = computed(() => this.state().error);
+  readonly hasAnalysis = computed(() => this.state().analysis !== null);
   
   // Actions
-  analyze(audio: File, text: string): void {
-    this.state.update(s => ({ ...s, loading: true }));
-    this.service.analyze(audio, text).subscribe({
-      next: (result) => this.state.update(s => ({ ...s, analysis: result, loading: false })),
-      error: (error) => this.state.update(s => ({ ...s, error, loading: false }))
-    });
+  analyze(audio: File, referenceText: string, languageCode: string): void {
+    this.state.update(s => ({ ...s, loading: true, error: null }));
+    
+    this.service.analyzePronunciation(audio, referenceText, { languageCode })
+      .subscribe({
+        next: (analysis) => this.state.update(s => ({
+          ...s,
+          analysis,
+          loading: false,
+          history: [...s.history, analysis].slice(-10) // Keep last 10
+        })),
+        error: (error) => this.state.update(s => ({
+          ...s,
+          loading: false,
+          error: error.message
+        }))
+      });
+  }
+  
+  reset(): void {
+    this.state.update(s => ({ ...s, analysis: null, error: null }));
   }
 }
 ```
 
 **Benefits**:
-- Centralized state management
-- Predictable data flow
-- Easy testing
-- Components become simpler
+- Single source of truth for feature state
+- Components become presentational
+- Easy to add features (history, undo/redo)
+- Simplified testing
+- Consistent error handling
 
-#### 6. **Create Shared Contract Library**
+#### 2.2 Simplify Components
 
-Extract type definitions into a shared library:
+**Goal**: Components become thin, declarative wrappers
 
 ```typescript
-// NEW: shared/contracts/pronunciation.contracts.ts
-export namespace PronunciationContracts {
-  export interface ScoreRequest {
-    audio: File;
-    referenceText: string;
-    languageCode: string;
+// REFACTOR: pronunciation-scorer.component.ts
+@Component({
+  selector: 'app-pronunciation-scorer',
+  standalone: true,
+  imports: [/* ... */],
+  template: './pronunciation-scorer.component.html'
+})
+export class PronunciationScorerComponent {
+  // Component-local UI state
+  referenceText = signal('');
+  languageCode = signal('en-US');
+  audioBlob = signal<File | null>(null);
+  
+  // Feature state from store
+  analysis = this.store.analysis;
+  loading = this.store.loading;
+  error = this.store.error;
+  
+  constructor(private store: PronunciationStore) {}
+  
+  onSubmit(): void {
+    const audio = this.audioBlob();
+    const text = this.referenceText();
+    const lang = this.languageCode();
+    
+    if (audio && text) {
+      this.store.analyze(audio, text, lang);
+    }
   }
   
-  export interface ScoreResponse {
-    score: number;
-    transcript: string;
-    words: WordDetail[];
+  onReset(): void {
+    this.store.reset();
+    this.referenceText.set('');
+    this.audioBlob.set(null);
   }
 }
 ```
 
 **Benefits**:
-- Single source of truth for contracts
-- Can be shared between frontend and backend (if using TypeScript)
-- Easier to version
-- Clear contract documentation
+- Component complexity reduced by ~60%
+- No subscription management needed
+- Clear separation: UI state vs feature state
+- Store can be reused across components
 
-### Backend Recommendations
+### Phase 3: Configuration & Modularity (Medium Priority)
 
-#### 1. **Implement API Versioning**
+#### 3.1 Centralize Configuration
 
-Add explicit versioning to all endpoints:
+**Goal**: All endpoints, features, and options in one place
 
-```kotlin
-// Before
-@RequestMapping("/api/pronunciation")
+```typescript
+// NEW: core/config/api.config.ts
+export interface ApiEndpoint {
+  path: string;
+  version?: string;
+  deprecated?: boolean;
+}
 
-// After
-@RequestMapping("/api/v1/pronunciation")
+export const API_CONFIG = {
+  baseUrl: '/api',
+  defaultVersion: 'v1',
+  endpoints: {
+    pronunciation: {
+      analyze: { path: '/pronunciation/analyze-detailed' },
+      score: { path: '/pronunciation/score' },
+      evaluate: { path: '/pronunciation/evaluate-align' }
+    },
+    transcription: {
+      transcribe: { path: '/transcription/transcribe' },
+      languages: { path: '/transcription/languages' }
+    }
+  },
+  features: {
+    prosody: { enabled: false },  // Feature flag
+    pronunciation: { enabled: true },
+    transcription: { enabled: true }
+  }
+} as const;
+
+// NEW: core/config/api-config.service.ts
+@Injectable({ providedIn: 'root' })
+export class ApiConfigService {
+  getEndpoint(key: string): string {
+    // Parse key like 'pronunciation.analyze'
+    const [feature, action] = key.split('.');
+    const endpoint = (API_CONFIG.endpoints as any)[feature]?.[action];
+    
+    if (!endpoint) throw new Error(`Unknown endpoint: ${key}`);
+    
+    const version = endpoint.version ?? API_CONFIG.defaultVersion;
+    return `${API_CONFIG.baseUrl}/${version}${endpoint.path}`;
+  }
+  
+  isFeatureEnabled(feature: string): boolean {
+    return (API_CONFIG.features as any)[feature]?.enabled ?? false;
+  }
+}
 ```
 
-Create a version header strategy:
+**Benefits**:
+- Single source of truth for API configuration
+- Easy to add versioning strategy
+- Feature flags for gradual rollout
+- Environment-specific overrides possible
+
+#### 3.2 Feature-Based Module Structure
+
+**Goal**: Self-contained features with clear boundaries
+
+```
+features/
+  pronunciation/
+    api/                                    # Feature-specific API layer
+      pronunciation-api.client.ts
+      pronunciation.adapter.ts
+    models/                                 # Feature domain models
+      pronunciation-analysis.model.ts
+    state/                                  # Feature state management
+      pronunciation.store.ts
+    services/                               # Feature business logic
+      pronunciation.service.ts
+    components/                             # Feature UI
+      pronunciation-scorer/
+    pronunciation.routes.ts                 # Feature routes
+    index.ts                                # Public API barrel
+```
+
+**Benefits**:
+- Features can be added/removed easily
+- Clear dependency boundaries
+- Independent testing
+- Lazy loading support
+- Code splitting optimization
+
+#### 3.3 Dynamic Feature Loading
+
+**Goal**: Enable/disable features without code changes
+
+```typescript
+// NEW: core/features/feature-registry.ts
+interface FeatureModule {
+  id: string;
+  name: string;
+  routes: Routes;
+  enabled: boolean;
+}
+
+@Injectable({ providedIn: 'root' })
+export class FeatureRegistry {
+  private features = new Map<string, FeatureModule>();
+  
+  register(feature: FeatureModule): void {
+    if (feature.enabled) {
+      this.features.set(feature.id, feature);
+    }
+  }
+  
+  getRoutes(): Routes {
+    return Array.from(this.features.values())
+      .flatMap(f => f.routes);
+  }
+}
+
+// app.routes.ts becomes dynamic
+export const routes: Routes = inject(FeatureRegistry).getRoutes();
+```
+
+**Benefits**:
+- Features can be toggled via config
+- A/B testing support
+- Role-based feature access
+- Reduced bundle size for disabled features
+
+### Phase 4: Backend Recommendations
+
+#### 4.1 Implement API Versioning
+
 ```kotlin
-@RestController
-@RequestMapping("/api/pronunciation")
+// Add version prefix to all endpoints
+@RequestMapping("/api/v1/pronunciation")
 class PronunciationController {
   
-  @PostMapping("/score", headers = ["X-API-Version=1.0"])
-  fun scoreV1(/* ... */): PronunciationScoreDto
+  @PostMapping("/analyze-detailed")
+  fun analyzeDetailed(@RequestPart audio: MultipartFile, /* ... */): DetailedAnalysisDto
   
-  @PostMapping("/score", headers = ["X-API-Version=2.0"])
-  fun scoreV2(/* ... */): DetailedAnalysisDto
+  // Support multiple versions simultaneously
+  @PostMapping("/analyze", headers = ["X-API-Version=2.0"])
+  fun analyzeV2(/* ... */): DetailedAnalysisV2Dto
 }
 ```
 
-**Benefits**:
-- Multiple API versions coexist
-- Gradual migration path
-- No breaking changes for clients
-- Clear deprecation strategy
-
-#### 2. **Standardize Request/Response Patterns**
-
-Create consistent patterns for all endpoints:
+#### 4.2 Standardize Request/Response Patterns
 
 ```kotlin
-// Standard request wrapper
-data class ApiRequest<T>(
-    val data: T,
-    val metadata: RequestMetadata
-)
+// Consistent multipart + JSON pattern
+@PostMapping("/analyze", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+fun analyze(
+  @RequestPart("audio") audioFile: MultipartFile,
+  @RequestPart("request") request: AnalyzeRequestDto  // JSON part
+): ApiResponse<DetailedAnalysisDto>
 
 // Standard response wrapper
 data class ApiResponse<T>(
-    val data: T,
-    val metadata: ResponseMetadata,
-    val errors: List<ApiError>?
+  val data: T,
+  val metadata: ResponseMetadata = ResponseMetadata(),
+  val errors: List<ApiError>? = null
 )
-
-// Consistent multipart handling
-@PostMapping("/score", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-fun score(
-    @RequestPart("audio") audioFile: MultipartFile,
-    @RequestPart("request") request: ScoreRequestDto  // JSON part
-): ApiResponse<PronunciationScoreDto>
 ```
 
-**Benefits**:
-- Predictable API structure
-- Easier client generation
-- Better error handling
-- Metadata for tracing, caching
-
-#### 3. **Use Feature-Based Controllers**
-
-Organize controllers by feature with clear boundaries:
-
-```kotlin
-// pronunciation-feature/
-//   controllers/
-//     ScoreController.kt
-//     AlignmentController.kt
-//   services/
-//     ScoreService.kt
-//   models/
-//     ScoreModels.kt
-
-@RestController
-@RequestMapping("/api/v1/features/pronunciation/score")
-class ScoreController(private val service: ScoreService) {
-  @PostMapping
-  fun score(@RequestBody request: ScoreRequest): ScoreResponse {
-    return service.score(request)
-  }
-}
-```
-
-**Benefits**:
-- Features can be enabled/disabled
-- Clear boundaries
-- Independent deployment (microservices future)
-- Better code organization
-
-#### 4. **Implement DTOs with Versioning**
-
-Version DTOs explicitly:
-
-```kotlin
-// models/v1/PronunciationModels.kt
-package de.demo.pronunciationservice.model.v1
-
-data class PronunciationScoreDto(/* ... */)
-
-// models/v2/PronunciationModels.kt
-package de.demo.pronunciationservice.model.v2
-
-data class DetailedAnalysisDto(/* ... */)
-
-// Converters for backward compatibility
-object ModelConverter {
-  fun toV2(v1: v1.PronunciationScoreDto): v2.DetailedAnalysisDto {
-    // Convert between versions
-  }
-}
-```
-
-**Benefits**:
-- Clear version management
-- Backward compatibility
-- Easy to deprecate old versions
-- Type safety across versions
-
-#### 5. **Add API Gateway Pattern**
-
-Introduce a facade for complex operations:
-
-```kotlin
-@RestController
-@RequestMapping("/api/v1/pronunciation/facade")
-class PronunciationFacadeController(
-    private val scoreService: ScoreService,
-    private val alignmentService: AlignmentService,
-    private val analysisService: AnalysisService
-) {
-  
-  @PostMapping("/analyze")
-  fun analyzeComprehensive(@RequestPart("audio") audio: MultipartFile,
-                          @RequestBody request: ComprehensiveRequest): ComprehensiveResponse {
-    // Coordinate multiple services
-    val score = scoreService.score(audio, request.referenceText)
-    val alignment = alignmentService.align(audio, request.referenceText)
-    val detailed = analysisService.analyze(audio, request.referenceText)
-    
-    return ComprehensiveResponse(score, alignment, detailed)
-  }
-}
-```
-
-**Benefits**:
-- Complex operations simplified
-- Reduce frontend API calls
-- Backend can optimize coordination
-- Clear high-level operations
-
-#### 6. **Use OpenAPI for Contract-First Development**
-
-Define APIs in OpenAPI spec first, then generate code:
+#### 4.3 OpenAPI Contract-First Development
 
 ```yaml
 # openapi.yaml
+openapi: 3.0.0
 paths:
-  /api/v1/pronunciation/score:
+  /api/v1/pronunciation/analyze:
     post:
-      operationId: scorePronunciation
+      operationId: analyzePronunciation
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ScoreRequest'
+              type: object
+              properties:
+                audio: { type: string, format: binary }
+                request: { $ref: '#/components/schemas/AnalyzeRequest' }
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScoreResponse'
+                $ref: '#/components/schemas/DetailedAnalysisDto'
 ```
 
-Generate TypeScript types for frontend:
+**Generate frontend types**:
 ```bash
-openapi-generator generate -i openapi.yaml -g typescript-angular -o frontend/src/generated
+npm install --save-dev @openapitools/openapi-generator-cli
+openapi-generator-cli generate -i openapi.yaml -g typescript-angular -o src/generated
 ```
-
-**Benefits**:
-- Contract-first design
-- Auto-generated client code
-- Type safety guaranteed
-- Documentation always in sync
 
 ---
 
 ## Implementation Roadmap
 
-### Phase 1: Foundation (2-3 weeks)
-1. Create API abstraction layer in frontend
-2. Implement adapter pattern for existing APIs
-3. Add API versioning to backend endpoints
-4. Standardize request/response patterns
+### Immediate (1-2 weeks)
+1. ✅ **Create API Client Layer**: Extract HTTP logic from services
+2. ✅ **Implement Adapter Pattern**: Add transformation layer for API responses
+3. ✅ **Centralize Configuration**: Move endpoints to config service
+4. ✅ **Add Feature Store**: Implement state management for pronunciation feature
 
-### Phase 2: Contracts (1-2 weeks)
-5. Extract and centralize type definitions
-6. Create OpenAPI specification
-7. Generate frontend client from OpenAPI
-8. Implement DTO versioning in backend
+### Short-term (2-4 weeks)
+5. **Refactor Components**: Simplify components using stores
+6. **Add Error Handling**: Centralized error interceptor with user-friendly messages
+7. **Feature Flags**: Add configuration-based feature toggling
+8. **Backend Versioning**: Add `/v1/` prefix to all backend endpoints
 
-### Phase 3: Modularity (2-3 weeks)
-9. Refactor features into self-contained modules
-10. Implement state management pattern
-11. Add feature-based controllers in backend
-12. Create API gateway for complex operations
+### Medium-term (1-2 months)
+9. **Feature Modules**: Restructure into self-contained feature modules
+10. **Dynamic Loading**: Implement feature registry pattern
+11. **OpenAPI Integration**: Generate TypeScript types from backend OpenAPI spec
+12. **Testing Infrastructure**: Add unit tests for stores, adapters, and services
 
-### Phase 4: Testing & Documentation (1-2 weeks)
-13. Update all tests for new architecture
-14. Create architectural decision records (ADRs)
-15. Document migration guide
-16. Create example feature implementation
+### Long-term (2-3 months)
+13. **Plugin Architecture**: Support loading external features
+14. **Micro-frontend**: Consider module federation for independent deployments
+15. **Backend Gateway**: API gateway pattern for complex operations
+16. **Monitoring**: Add telemetry and performance tracking
 
 ---
 
-## Validation Against Requirements
+## Validation Checklist
 
 ### ✅ Addresses Core Instructions
-- [x] Reviewed current architecture in both frontend and backend master branches
-- [x] Assessed how new features (detailed-analysis branch) would be integrated
-- [x] Identified architectural areas for improvement (modularity, contracts, coupling)
+- [x] Reviewed current architecture in master branch (post detailed-analysis merge)
+- [x] Assessed current integration patterns and identified pain points
+- [x] Identified architectural areas for improvement (abstraction, modularity, state management)
 - [x] Offered concrete recommendations for "plug and play" approach
-- [x] Covered both frontend and backend considerations
+- [x] Covered both frontend (primary focus) and backend considerations
 
 ### ✅ Follows Reasoning Steps
-- [x] Compared master to detailed-analysis branches
+- [x] Compared current state to understand integration challenges
 - [x] Examined separation of concerns, modularity, and contracts
-- [x] Considered design patterns (adapter, facade, strategy)
-- [x] Proposed API abstraction layers
+- [x] Considered design patterns (adapter, store, feature registry)
+- [x] Proposed API abstraction layers and versioning strategies
 
 ### ✅ Output Format
 - [x] High-level written analysis with clear structure
 - [x] Numbered/bulleted lists for actionable improvements
-- [x] Organized by frontend and backend sections
+- [x] Organized by architecture layers (API, state, features)
 - [x] Includes code examples and explanations
+- [x] Provides implementation roadmap
 
 ---
 
 ## Conclusion
 
-The current architecture is functional but tightly coupled, making feature integration difficult and error-prone. By implementing the recommended patterns—particularly API abstraction, adapter pattern, versioning, and feature modularity—the system can achieve true "plug and play" capability where:
+The current architecture successfully integrates the detailed-analysis feature but exhibits tight coupling that makes future changes risky and time-consuming. The main challenges are:
 
-1. **New features can be added** without modifying existing code
-2. **API changes are isolated** to adapter layers
-3. **Multiple API versions coexist** peacefully
-4. **Components remain stable** despite backend evolution
-5. **Testing is simplified** through clear boundaries
-6. **Documentation stays current** via contract-first approach
+1. **Direct HTTP coupling** - Services directly expose HTTP observables to components
+2. **No adaptation layer** - API changes immediately affect components
+3. **Inconsistent state management** - Each component manages its own state
+4. **Missing feature boundaries** - No clear plugin architecture
 
-The detailed-analysis branch integration demonstrates these pain points clearly: what should be a simple feature addition requires changes across services, components, and templates. With the proposed architecture, such changes would be localized to the API adapter layer, with components remaining unchanged.
+### Recommended Architecture Evolution
 
-### Priority Recommendations
+**Current Flow**:
+```
+Component → Service → HttpClient → Backend
+          ↓
+     Template renders API structure directly
+```
 
-**High Priority (Do First)**:
-1. API abstraction layer (frontend)
-2. API versioning (backend)
-3. Adapter pattern (frontend)
-4. Standardized request/response (backend)
+**Proposed Flow**:
+```
+Component → Store → Service → Adapter → API Client → Backend
+          ↓           ↓         ↓           ↓
+     Signals   Domain    Transforms   HTTP Details
+               Logic     API ↔ Domain   & Endpoints
+```
 
-**Medium Priority (Next)**:
-5. Feature modularity (both)
-6. State management (frontend)
-7. OpenAPI contract-first (both)
+### Priority Actions
 
-**Low Priority (Later)**:
-8. API gateway pattern (backend)
-9. Advanced features (feature flags, A/B testing)
+**Must Do First**:
+1. **API Client Layer** - Isolate HTTP concerns
+2. **Adapter Pattern** - Decouple API structure from domain models
+3. **Feature Store** - Centralize state management
+4. **Config Service** - Centralize endpoint management
 
-This architecture will significantly reduce the friction of integrating new features like those in the detailed-analysis branch, enabling rapid iteration while maintaining stability.
+**Do Next**:
+5. Feature flags for gradual rollout
+6. Backend API versioning
+7. OpenAPI contract generation
+
+**Consider Later**:
+8. Dynamic feature loading
+9. Micro-frontend architecture
+10. Plugin system
+
+By implementing these recommendations, the system will achieve true "plug and play" capability where:
+- ✅ New features can be added without modifying existing code
+- ✅ API changes are isolated to adapter layers
+- ✅ Multiple API versions can coexist
+- ✅ Components remain stable despite backend evolution
+- ✅ Testing is simplified through clear boundaries
+- ✅ Features can be enabled/disabled via configuration
+
+This architecture will reduce the integration friction observed during the detailed-analysis merge and enable rapid, safe feature iteration.

@@ -1,93 +1,160 @@
-<div class="live-transcriber-container">
-  <mat-card class="glass-surface elevate main-card">
-    <mat-card-header>
-      <mat-card-title>Live Transcription</mat-card-title>
-      <mat-card-subtitle>Transcribe microphone input or upload audio/video</mat-card-subtitle>
-    </mat-card-header>
+<div class="live-transcriber">
+  <!-- Intro Section -->
+  <div class="intro-section">
+    <div class="intro-content">
+      <div class="intro-badge intro-badge--info">
+        <span class="badge-icon">🎙️</span>
+        <span>Real-Time Transcription</span>
+      </div>
+      <h1 class="intro-title">Live Speech to Text</h1>
+      <p class="intro-subtitle">Transcribe your speech in real-time or upload audio/video files</p>
+    </div>
+  </div>
 
-    <mat-card-content>
-      <section class="controls section">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Language</mat-label>
-          <mat-select [ngModel]="languageCode()" (ngModelChange)="languageCode.set($event)">
-            @for (option of languages(); track option.code) {
-              <mat-option [value]="option.code">{{ option.name }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+  <div class="transcription-card glass-surface-strong">
+    <section class="controls-section">
+      <div class="section-header">
+        <mat-icon class="section-icon">settings_voice</mat-icon>
+        <h2>Transcription Settings</h2>
+      </div>
 
-        <div class="buttons">
-          @if (isSupported()) {
-            @if (!isListening()) {
-              <button mat-raised-button color="primary" (click)="start()" aria-label="Start live transcription">
-                <mat-icon>mic</mat-icon>
-                <span>Start</span>
-              </button>
-            } @else {
-              <button mat-raised-button color="warn" (click)="stop()" aria-label="Stop live transcription">
-                <mat-icon>stop</mat-icon>
-                <span>Stop</span>
-              </button>
-              <span class="chip" aria-live="polite">Listening…</span>
-            }
-          } @else {
-            <div class="unsupported chip" role="note">Browser speech recognition not supported. Use file upload.</div>
+      <mat-form-field appearance="outline" class="language-select">
+        <mat-label>Language</mat-label>
+        <mat-select [ngModel]="languageCode()" (ngModelChange)="languageCode.set($event)">
+          @for (option of languages(); track option.code) {
+            <mat-option [value]="option.code">{{ option.name }}</mat-option>
           }
+        </mat-select>
+      </mat-form-field>
 
-          <button mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="isListening() || isTranscribing()" aria-label="Upload audio or video">
-            <mat-icon>upload</mat-icon>
-            <span>Upload</span>
-          </button>
-          <input #fileInput type="file" accept="audio/*,video/*" (change)="onFileSelected($event)" hidden />
-        </div>
-      </section>
+      <div class="button-group">
+        @if (isSupported()) {
+          @if (!isListening()) {
+            <button
+              mat-raised-button
+              color="primary"
+              class="action-button primary-action"
+              (click)="start()">
+              <mat-icon>radio_button_checked</mat-icon>
+              <span>Start Live Transcription</span>
+            </button>
+          } @else {
+            <button
+              mat-raised-button
+              color="warn"
+              class="action-button listening-active"
+              (click)="stop()">
+              <span class="listening-pulse"></span>
+              <mat-icon>stop_circle</mat-icon>
+              <span>Stop</span>
+            </button>
+            <div class="listening-indicator">
+              <div class="listening-wave"></div>
+              <span>Listening...</span>
+            </div>
+          }
+        } @else {
+          <div class="alert alert-warning">
+            <mat-icon>info_outline</mat-icon>
+            <span>Browser speech recognition not supported. Please use file upload instead.</span>
+          </div>
+        }
 
-      @if (isTranscribing()) {
-        <div class="loading-section" aria-live="polite" aria-busy="true">
+        <div class="soft-divider"></div>
+
+        <button
+          mat-stroked-button
+          class="upload-button"
+          (click)="fileInput.click()"
+          [disabled]="isListening() || isTranscribing()">
+          <mat-icon>upload_file</mat-icon>
+          <span>Upload Audio/Video</span>
+        </button>
+        <input #fileInput type="file" accept="audio/*,video/*" (change)="onFileSelected($event)" hidden />
+      </div>
+    </section>
+
+    @if (isTranscribing()) {
+      <div class="transcribing-state">
+        <div class="transcribing-content">
+          <div class="transcribing-spinner"></div>
+          <p class="transcribing-text">Transcribing your file...</p>
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-          <p>Transcribing file…</p>
         </div>
-      }
+      </div>
+    }
 
-      @if (errorMessage()) {
-        <div class="error-message chip" role="alert">
-          <mat-icon aria-hidden="true">error_outline</mat-icon>
-          <span>{{ errorMessage() }}</span>
-        </div>
-      }
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
 
-      <div class="soft-divider" aria-hidden="true"></div>
+    <div class="divider"></div>
 
-      <section class="transcript section">
-        <div class="toolbar">
-          <button mat-button (click)="copy()" [disabled]="!fullTranscript()">
+    <section class="transcript-section">
+      <div class="section-header">
+        <mat-icon class="section-icon">article</mat-icon>
+        <h2>Transcript</h2>
+        <div class="transcript-actions">
+          <button
+            matIconButton
+            class="icon-btn"
+            (click)="copy()"
+            [disabled]="!fullTranscript()"
+            matTooltip="Copy transcript">
             <mat-icon>content_copy</mat-icon>
-            <span>Copy</span>
           </button>
-          <button mat-button (click)="clear()" [disabled]="segments().length === 0 && !interim()">
-            <mat-icon>backspace</mat-icon>
-            <span>Clear</span>
-          </button>
-          <button mat-button (click)="speak(fullTranscript())" [disabled]="!fullTranscript()">
+          <button
+            mat-icon-button
+            class="icon-btn"
+            (click)="speak(fullTranscript())"
+            [disabled]="!fullTranscript()"
+            matTooltip="Listen to transcript">
             <mat-icon>volume_up</mat-icon>
-            <span>Listen</span>
+          </button>
+          <button
+            matIconButton
+            class="icon-btn"
+            (click)="clear()"
+            [disabled]="segments().length === 0 && !interim()"
+            matTooltip="Clear transcript">
+            <mat-icon>delete_outline</mat-icon>
           </button>
         </div>
+      </div>
 
-        <div class="transcript-body glass-surface" role="log" aria-live="polite">
-          <div class="segment-list">
+      <div class="transcript-display glass-surface">
+        @if (segments().length === 0 && !interim()) {
+          <div class="empty-state">
+            <mat-icon>mic_none</mat-icon>
+            <p>Your transcript will appear here</p>
+            <span>Start speaking or upload a file to begin</span>
+          </div>
+        } @else {
+          <div class="transcript-container">
             @for (s of segments(); track s.at) {
-              <span class="segment" (click)="speak(s.text)" title="Click to listen">
-                <small class="chip" aria-hidden="true">{{ formatMs(s.at) }}</small>
-                {{ s.text }}
-              </span>
+              <div class="transcript-item" (click)="speak(s.text)">
+                <div class="transcript-meta">
+                  <span class="transcript-timestamp">{{ formatMs(s.at) }}</span>
+                  <div class="transcript-connector"></div>
+                </div>
+                <p class="transcript-text">{{ s.text }}</p>
+              </div>
             }
             @if (interim()) {
-              <span class="interim">{{ interim() }}</span>
+              <div class="transcript-item interim-item">
+                <div class="transcript-meta">
+                  <span class="transcript-timestamp">Live</span>
+                  <div class="transcript-connector"></div>
+                </div>
+                <p class="transcript-text interim">{{ interim() }}</p>
+              </div>
             }
           </div>
-        </div>
-      </section>
-    </mat-card-content>
-  </mat-card>
+        }
+      </div>
+    </section>
+  </div>
 </div>
