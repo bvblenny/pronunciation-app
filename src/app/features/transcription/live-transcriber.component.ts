@@ -9,8 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { PronunciationService } from '../../core/services';
-import { TranscriptionResponse } from '../../core/api';
+import { MatMenuModule } from '@angular/material/menu';
+import { PronunciationService, SubtitleService } from '../../core';
+import { TranscriptionResponse } from '../../core';
+import { SubtitleFormat } from '../../core';
 
 interface TranscriptSegment { text: string; at: number; }
 
@@ -28,12 +30,14 @@ interface TranscriptSegment { text: string; at: number; }
     MatSelectModule,
     MatProgressBarModule,
     MatTooltipModule,
+    MatMenuModule,
   ],
   templateUrl: './live-transcriber.component.html',
   styleUrl: './live-transcriber.component.scss'
 })
 export class LiveTranscriberComponent implements OnDestroy {
   private readonly svc = inject(PronunciationService);
+  private readonly subtitleSvc = inject(SubtitleService);
 
   languageCode = signal<string>('en-US');
   isSupported = signal<boolean>(false);
@@ -43,6 +47,7 @@ export class LiveTranscriberComponent implements OnDestroy {
   errorMessage = signal<string | null>(null);
   isTranscribing = signal<boolean>(false);
   languages = this.svc.getLanguagesSignal();
+  lastTranscription = signal<TranscriptionResponse | null>(null);
   private recognition: any | null = null;
   private startedAt = 0;
 
@@ -50,6 +55,13 @@ export class LiveTranscriberComponent implements OnDestroy {
     const text = this.segments().map(s => s.text).join(' ');
     const interim = this.interim();
     return interim ? text + ' ' + interim : text;
+  });
+
+  hasSubtitleData = computed(() => {
+    const transcription = this.lastTranscription();
+    return transcription !== null &&
+           transcription.segments !== undefined &&
+           transcription.segments.length > 0;
   });
 
   constructor() {
@@ -162,6 +174,7 @@ export class LiveTranscriberComponent implements OnDestroy {
           this.segments.set(segs);
           this.interim.set('');
           this.isTranscribing.set(false);
+          this.lastTranscription.set(res);
         },
         error: (err) => {
           console.error(err);
@@ -172,6 +185,27 @@ export class LiveTranscriberComponent implements OnDestroy {
           this.isTranscribing.set(false);
         }
       });
+    }
+  }
+
+  downloadSubtitles(format: SubtitleFormat) {
+    const transcription = this.lastTranscription();
+    if (!transcription || !transcription.segments?.length) return;
+
+    try {
+      const blob = this.subtitleSvc.generateSubtitles(transcription.segments, format);
+      const formatInfo = this.subtitleSvc.getFormatInfo(format);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transcription.${formatInfo.extension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to generate subtitles:', err);
+      this.errorMessage.set('Failed to generate subtitles. Please try again.');
     }
   }
 }

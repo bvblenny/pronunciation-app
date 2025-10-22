@@ -97,6 +97,12 @@
       <div class="section-header">
         <mat-icon class="section-icon">article</mat-icon>
         <h2>Transcript</h2>
+        @if (hasSubtitleData()) {
+          <span class="subtitle-badge">
+            <mat-icon>subtitles</mat-icon>
+            Subtitles ready
+          </span>
+        }
         <div class="transcript-actions">
           <button
             matIconButton
@@ -114,6 +120,29 @@
             matTooltip="Listen to transcript">
             <mat-icon>volume_up</mat-icon>
           </button>
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="subtitleMenu"
+            class="icon-btn subtitle-btn"
+            [class.has-data]="hasSubtitleData()"
+            [disabled]="!hasSubtitleData()"
+            matTooltip="Download subtitles">
+            <mat-icon>subtitles</mat-icon>
+          </button>
+          <mat-menu #subtitleMenu="matMenu">
+            <button mat-menu-item (click)="downloadSubtitles('srt')">
+              <mat-icon>download</mat-icon>
+              <span>SubRip (.srt)</span>
+            </button>
+            <button mat-menu-item (click)="downloadSubtitles('vtt')">
+              <mat-icon>download</mat-icon>
+              <span>WebVTT (.vtt)</span>
+            </button>
+            <button mat-menu-item (click)="downloadSubtitles('txt')">
+              <mat-icon>download</mat-icon>
+              <span>Plain Text (.txt)</span>
+            </button>
+          </mat-menu>
           <button
             matIconButton
             class="icon-btn"
