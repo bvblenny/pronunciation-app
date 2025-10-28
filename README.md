@@ -73,8 +73,21 @@ Errors handled in UI for common cases:
 - Browser speech recognition (live transcription) isn’t available in all browsers; use the upload path instead.
 - CORS/proxy: use `npm run start:proxy` during development.
 
+## E2E Testing
+
+This project includes comprehensive end-to-end tests using Cypress.
+
+### Quick Start
+
+```bash
+# Start the app
+npm start
+
+# Run tests in interactive mode
+npm run e2e:open
+```
+
 ## Next steps (optional)
 
-- Add E2E tests for the scorer and transcription flows
 - Persist recent analyses locally (IndexedDB) for quick comparisons
 - Offer inline editing of the reference text with suggested corrections
