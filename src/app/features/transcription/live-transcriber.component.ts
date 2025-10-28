@@ -10,9 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
-import { PronunciationService, SubtitleService } from '../../core';
-import { TranscriptionResponse } from '../../core';
-import { SubtitleFormat } from '../../core';
+import { PronunciationService, SubtitleService, TranscriptionResponse, SubtitleFormat } from '../../core';
 
 interface TranscriptSegment { text: string; at: number; }
 
