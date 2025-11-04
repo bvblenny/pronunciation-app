@@ -1,4 +1,4 @@
-import {Component, OnDestroy, signal, computed, effect, inject} from '@angular/core';
+import {Component, OnDestroy, signal, computed, effect, inject, viewChild, ElementRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -10,9 +10,17 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatChipsModule } from '@angular/material/chips';
 import { PronunciationService, SubtitleService, TranscriptionResponse, SubtitleFormat } from '../../core';
 
-interface TranscriptSegment { text: string; at: number; }
+interface TranscriptSegment {
+  text: string;
+  at: number;
+  speaker?: string;
+  isHighlighted?: boolean;
+}
 
 @Component({
   selector: 'app-live-transcriber',
@@ -29,6 +37,9 @@ interface TranscriptSegment { text: string; at: number; }
     MatProgressBarModule,
     MatTooltipModule,
     MatMenuModule,
+    MatTabsModule,
+    MatSlideToggleModule,
+    MatChipsModule,
   ],
   templateUrl: './live-transcriber.component.html',
   styleUrl: './live-transcriber.component.scss'
@@ -36,6 +47,8 @@ interface TranscriptSegment { text: string; at: number; }
 export class LiveTranscriberComponent implements OnDestroy {
   private readonly svc = inject(PronunciationService);
   private readonly subtitleSvc = inject(SubtitleService);
+
+  transcriptContainer = viewChild<ElementRef<HTMLDivElement>>('transcriptContainer');
 
   languageCode = signal<string>('en-US');
   isSupported = signal<boolean>(false);
@@ -46,8 +59,18 @@ export class LiveTranscriberComponent implements OnDestroy {
   isTranscribing = signal<boolean>(false);
   languages = this.svc.getLanguagesSignal();
   lastTranscription = signal<TranscriptionResponse | null>(null);
+
+  // Enhanced UI features
+  autoScroll = signal<boolean>(true);
+  isFullscreen = signal<boolean>(false);
+  searchQuery = signal<string>('');
+  selectedTabIndex = signal<number>(0);
+  activeSegmentIndex = signal<number>(-1);
+  isTranscriptExpanded = signal<boolean>(true);
+
   private recognition: any | null = null;
   private startedAt = 0;
+  private scrollTimeout: any = null;
 
   fullTranscript = computed(() => {
     const text = this.segments().map(s => s.text).join(' ');
@@ -60,6 +83,22 @@ export class LiveTranscriberComponent implements OnDestroy {
     return transcription !== null &&
            transcription.segments !== undefined &&
            transcription.segments.length > 0;
+  });
+
+  filteredSegments = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.segments();
+
+    return this.segments().map((seg, idx) => ({
+      ...seg,
+      isHighlighted: seg.text.toLowerCase().includes(query),
+      originalIndex: idx
+    })).filter(seg => seg.isHighlighted);
+  });
+
+  hasSearchResults = computed(() => {
+    const query = this.searchQuery().trim();
+    return query.length > 0 && this.filteredSegments().length > 0;
   });
 
   constructor() {
@@ -84,6 +123,7 @@ export class LiveTranscriberComponent implements OnDestroy {
           const text = res[0].transcript.trim();
           if (res.isFinal) {
             this.segments.update(list => [...list, { text, at: Date.now() - this.startedAt }]);
+            this.scrollToBottom();
           } else {
             interim += text + ' ';
           }
@@ -205,5 +245,67 @@ export class LiveTranscriberComponent implements OnDestroy {
       console.error('Failed to generate subtitles:', err);
       this.errorMessage.set('Failed to generate subtitles. Please try again.');
     }
+  }
+
+  toggleFullscreen() {
+    this.isFullscreen.update(v => !v);
+  }
+
+  toggleTranscriptExpansion() {
+    this.isTranscriptExpanded.update(v => !v);
+  }
+
+  jumpToSegment(index: number) {
+    this.activeSegmentIndex.set(index);
+    const element = document.querySelector(`[data-segment-index="${index}"]`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Temporarily disable auto-scroll when manually jumping
+      if (this.autoScroll()) {
+        this.autoScroll.set(false);
+        setTimeout(() => this.autoScroll.set(true), 3000);
+      }
+    }
+  }
+
+  clearSearch() {
+    this.searchQuery.set('');
+  }
+
+  private scrollToBottom() {
+    if (!this.autoScroll()) return;
+
+    clearTimeout(this.scrollTimeout);
+    this.scrollTimeout = setTimeout(() => {
+      const containerRef = this.transcriptContainer();
+      if (containerRef?.nativeElement) {
+        const container = containerRef.nativeElement;
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100);
+  }
+
+  onUserScroll() {
+    // Disable auto-scroll when user manually scrolls
+    const containerRef = this.transcriptContainer();
+    if (!containerRef?.nativeElement) return;
+
+    const container = containerRef.nativeElement;
+    const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+
+    if (!isAtBottom && this.autoScroll()) {
+      this.autoScroll.set(false);
+    } else if (isAtBottom && !this.autoScroll()) {
+      this.autoScroll.set(true);
+    }
+  }
+
+  highlightText(text: string): string {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return text;
+
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
   }
 }
