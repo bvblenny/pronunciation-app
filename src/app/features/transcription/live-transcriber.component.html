@@ -1,6 +1,6 @@
-<div class="live-transcriber">
+<div class="live-transcriber" [class.fullscreen]="isFullscreen()">
   <!-- Intro Section -->
-  <div class="intro-section">
+  <div class="intro-section" *ngIf="!isFullscreen()">
     <div class="intro-content">
       <div class="intro-badge intro-badge--info">
         <span class="badge-icon">🎙️</span>
@@ -12,65 +12,73 @@
   </div>
 
   <div class="transcription-card glass-surface-strong">
-    <section class="controls-section">
+    <!-- Controls Section - Collapsible in fullscreen -->
+    <section class="controls-section" [class.minimized]="isFullscreen()">
       <div class="section-header">
         <mat-icon class="section-icon">settings_voice</mat-icon>
         <h2>Transcription Settings</h2>
+        @if (isFullscreen()) {
+          <button mat-icon-button (click)="toggleFullscreen()" matTooltip="Exit fullscreen">
+            <mat-icon>fullscreen_exit</mat-icon>
+          </button>
+        }
       </div>
 
-      <mat-form-field appearance="outline" class="language-select">
-        <mat-label>Language</mat-label>
-        <mat-select [ngModel]="languageCode()" (ngModelChange)="languageCode.set($event)">
-          @for (option of languages(); track option.code) {
-            <mat-option [value]="option.code">{{ option.name }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <div class="controls-content" [class.collapsed]="isFullscreen()">
+        <mat-form-field appearance="outline" class="language-select">
+          <mat-label>Language</mat-label>
+          <mat-select [ngModel]="languageCode()" (ngModelChange)="languageCode.set($event)">
+            @for (option of languages(); track option.code) {
+              <mat-option [value]="option.code">{{ option.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
 
-      <div class="button-group">
-        @if (isSupported()) {
-          @if (!isListening()) {
-            <button
-              mat-raised-button
-              color="primary"
-              class="action-button primary-action"
-              (click)="start()">
-              <mat-icon>radio_button_checked</mat-icon>
-              <span>Start Live Transcription</span>
-            </button>
+        <div class="button-group">
+          @if (isSupported()) {
+            @if (!isListening()) {
+              <button
+                mat-raised-button
+                color="primary"
+                class="action-button primary-action"
+                (click)="start()">
+                <mat-icon>radio_button_checked</mat-icon>
+                <span>Start Live Transcription</span>
+              </button>
+            } @else {
+              <button
+                mat-raised-button
+                color="warn"
+                class="action-button listening-active"
+                (click)="stop()">
+                <span class="listening-pulse"></span>
+                <mat-icon>stop_circle</mat-icon>
+                <span>Stop</span>
+              </button>
+              <div class="listening-indicator">
+                <div class="listening-wave"></div>
+                <span>Listening...</span>
+              </div>
+            }
           } @else {
-            <button
-              mat-raised-button
-              color="warn"
-              class="action-button listening-active"
-              (click)="stop()">
-              <span class="listening-pulse"></span>
-              <mat-icon>stop_circle</mat-icon>
-              <span>Stop</span>
-            </button>
-            <div class="listening-indicator">
-              <div class="listening-wave"></div>
-              <span>Listening...</span>
+            <div class="alert alert-warning">
+              <mat-icon>info_outline</mat-icon>
+              <span>Browser speech recognition not supported. Please use file upload instead.</span>
             </div>
           }
-        } @else {
-          <div class="alert alert-warning">
-            <mat-icon>info_outline</mat-icon>
-            <span>Browser speech recognition not supported. Please use file upload instead.</span>
-          </div>
-        }
 
-        <div class="soft-divider"></div>
+          <div class="soft-divider"></div>
 
-        <button
-          mat-stroked-button
-          class="upload-button"
-          (click)="fileInput.click()"
-          [disabled]="isListening() || isTranscribing()">
-          <mat-icon>upload_file</mat-icon>
-          <span>Upload Audio/Video</span>
-        </button>
-        <input #fileInput type="file" accept="audio/*,video/*" (change)="onFileSelected($event)" hidden />
+          <button
+            mat-stroked-button
+            class="upload-button"
+            (click)="fileInput.click()"
+            [disabled]="isListening() || isTranscribing()">
+            <mat-icon>upload_file</mat-icon>
+            <span>Upload Audio/Video</span>
+          </button>
+          <input #fileInput type="file" accept="audio/*,video/*" (change)="onFileSelected($event)" hidden />
+        </div>
       </div>
     </section>
 
@@ -93,19 +101,72 @@
 
     <div class="divider"></div>
 
+    <!-- Tab-Based Transcript Section -->
     <section class="transcript-section">
       <div class="section-header">
         <mat-icon class="section-icon">article</mat-icon>
         <h2>Transcript</h2>
+
+        @if (segments().length > 0) {
+          <div class="transcript-stats">
+            <mat-chip class="stat-chip">
+              <mat-icon>schedule</mat-icon>
+              {{ formatMs(segments()[segments().length - 1].at || 0) }}
+            </mat-chip>
+            <mat-chip class="stat-chip">
+              <mat-icon>notes</mat-icon>
+              {{ segments().length }} segments
+            </mat-chip>
+          </div>
+        }
+
+        @if (hasSubtitleData()) {
+          <span class="subtitle-badge">
+            <mat-icon>subtitles</mat-icon>
+            Subtitles ready
+          </span>
+        }
+
         <div class="transcript-actions">
+          <!-- Search -->
+          @if (segments().length > 0) {
+            <div class="search-container" [class.active]="searchQuery()">
+              <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+                <mat-icon matPrefix>search</mat-icon>
+                <input
+                  matInput
+                  placeholder="Search transcript..."
+                  [ngModel]="searchQuery()"
+                  (ngModelChange)="searchQuery.set($event)">
+                @if (searchQuery()) {
+                  <button mat-icon-button matSuffix (click)="clearSearch()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                }
+              </mat-form-field>
+            </div>
+          }
+
+          <!-- Auto-scroll toggle -->
+          @if (segments().length > 3) {
+            <mat-slide-toggle
+              [checked]="autoScroll()"
+              (change)="autoScroll.set($event.checked)"
+              matTooltip="Auto-scroll to latest">
+              <mat-icon>{{ autoScroll() ? 'expand_more' : 'expand_less' }}</mat-icon>
+            </mat-slide-toggle>
+          }
+
+          <!-- Action buttons -->
           <button
-            matIconButton
+            mat-icon-button
             class="icon-btn"
             (click)="copy()"
             [disabled]="!fullTranscript()"
             matTooltip="Copy transcript">
             <mat-icon>content_copy</mat-icon>
           </button>
+
           <button
             mat-icon-button
             class="icon-btn"
@@ -114,8 +175,41 @@
             matTooltip="Listen to transcript">
             <mat-icon>volume_up</mat-icon>
           </button>
+
           <button
-            matIconButton
+            mat-icon-button
+            [matMenuTriggerFor]="subtitleMenu"
+            class="icon-btn subtitle-btn"
+            [class.has-data]="hasSubtitleData()"
+            [disabled]="!hasSubtitleData()"
+            matTooltip="Download subtitles">
+            <mat-icon>subtitles</mat-icon>
+          </button>
+          <mat-menu #subtitleMenu="matMenu">
+            <button mat-menu-item (click)="downloadSubtitles('srt')">
+              <mat-icon>download</mat-icon>
+              <span>SubRip (.srt)</span>
+            </button>
+            <button mat-menu-item (click)="downloadSubtitles('vtt')">
+              <mat-icon>download</mat-icon>
+              <span>WebVTT (.vtt)</span>
+            </button>
+            <button mat-menu-item (click)="downloadSubtitles('txt')">
+              <mat-icon>download</mat-icon>
+              <span>Plain Text (.txt)</span>
+            </button>
+          </mat-menu>
+
+          <button
+            mat-icon-button
+            class="icon-btn"
+            (click)="toggleFullscreen()"
+            [matTooltip]="isFullscreen() ? 'Exit fullscreen' : 'Fullscreen mode'">
+            <mat-icon>{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
             class="icon-btn"
             (click)="clear()"
             [disabled]="segments().length === 0 && !interim()"
@@ -125,36 +219,157 @@
         </div>
       </div>
 
-      <div class="transcript-display glass-surface">
-        @if (segments().length === 0 && !interim()) {
-          <div class="empty-state">
-            <mat-icon>mic_none</mat-icon>
-            <p>Your transcript will appear here</p>
-            <span>Start speaking or upload a file to begin</span>
-          </div>
-        } @else {
-          <div class="transcript-container">
-            @for (s of segments(); track s.at) {
-              <div class="transcript-item" (click)="speak(s.text)">
-                <div class="transcript-meta">
-                  <span class="transcript-timestamp">{{ formatMs(s.at) }}</span>
-                  <div class="transcript-connector"></div>
-                </div>
-                <p class="transcript-text">{{ s.text }}</p>
+      <!-- Tab Navigation -->
+      <mat-tab-group
+        class="transcript-tabs"
+        [(selectedIndex)]="selectedTabIndex"
+        animationDuration="300ms">
+
+        <!-- Timeline View -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">timeline</mat-icon>
+            Timeline
+          </ng-template>
+
+          <div
+            #transcriptContainer
+            class="transcript-display glass-surface"
+            (scroll)="onUserScroll()">
+            @if (segments().length === 0 && !interim()) {
+              <div class="empty-state">
+                <mat-icon>mic_none</mat-icon>
+                <p>Your transcript will appear here</p>
+                <span>Start speaking or upload a file to begin</span>
+              </div>
+            } @else {
+              <div class="transcript-container timeline-view">
+                @for (s of (searchQuery() ? filteredSegments() : segments()); track s.at; let i = $index) {
+                  <div
+                    class="transcript-item"
+                    [class.active]="activeSegmentIndex() === i"
+                    [class.highlighted]="s.isHighlighted"
+                    [attr.data-segment-index]="i"
+                    (click)="jumpToSegment(i)">
+                    <div class="transcript-meta">
+                      <button
+                        mat-button
+                        class="timestamp-button"
+                        (click)="speak(s.text); $event.stopPropagation()">
+                        <mat-icon>play_arrow</mat-icon>
+                        <span class="transcript-timestamp">{{ formatMs(s.at) }}</span>
+                      </button>
+                      <div class="transcript-connector"></div>
+                    </div>
+                    <div class="transcript-content">
+                      @if (s.speaker) {
+                        <span class="speaker-label">{{ s.speaker }}</span>
+                      }
+                      <p class="transcript-text" [innerHTML]="highlightText(s.text)"></p>
+                    </div>
+                  </div>
+                }
+                @if (interim() && !searchQuery()) {
+                  <div class="transcript-item interim-item">
+                    <div class="transcript-meta">
+                      <div class="timestamp-button live-badge">
+                        <span class="live-dot"></span>
+                        <span class="transcript-timestamp">Live</span>
+                      </div>
+                      <div class="transcript-connector"></div>
+                    </div>
+                    <div class="transcript-content">
+                      <p class="transcript-text interim">{{ interim() }}</p>
+                    </div>
+                  </div>
+                }
               </div>
             }
-            @if (interim()) {
-              <div class="transcript-item interim-item">
-                <div class="transcript-meta">
-                  <span class="transcript-timestamp">Live</span>
-                  <div class="transcript-connector"></div>
+          </div>
+        </mat-tab>
+
+        <!-- Reading View -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">subject</mat-icon>
+            Reading
+          </ng-template>
+
+          <div class="transcript-display glass-surface reading-view">
+            @if (segments().length === 0 && !interim()) {
+              <div class="empty-state">
+                <mat-icon>auto_stories</mat-icon>
+                <p>Reading view will appear here</p>
+                <span>A clean, formatted view for easy reading</span>
+              </div>
+            } @else {
+              <div class="reading-content">
+                <div class="reading-header">
+                  <h3>Transcript Document</h3>
+                  <p class="reading-meta">
+                    Duration: {{ formatMs(segments()[segments().length - 1].at || 0) }} •
+                    {{ segments().length }} segments
+                  </p>
                 </div>
-                <p class="transcript-text interim">{{ interim() }}</p>
+
+                <div class="reading-body">
+                  @for (s of segments(); track s.at; let i = $index) {
+                    <p
+                      class="reading-paragraph"
+                      [class.highlighted]="s.isHighlighted"
+                      (click)="jumpToSegment(i)">
+                      <span class="reading-timestamp">[{{ formatMs(s.at) }}]</span>
+                      {{ s.text }}
+                    </p>
+                  }
+                  @if (interim()) {
+                    <p class="reading-paragraph interim-paragraph">
+                      <span class="reading-timestamp live">[LIVE]</span>
+                      {{ interim() }}
+                    </p>
+                  }
+                </div>
               </div>
             }
           </div>
-        }
-      </div>
+        </mat-tab>
+
+        <!-- Full Text View -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">notes</mat-icon>
+            Full Text
+          </ng-template>
+
+          <div class="transcript-display glass-surface full-text-view">
+            @if (!fullTranscript()) {
+              <div class="empty-state">
+                <mat-icon>text_snippet</mat-icon>
+                <p>Full text view</p>
+                <span>Complete transcript as continuous text</span>
+              </div>
+            } @else {
+              <div class="full-text-content">
+                <p class="full-text-paragraph">{{ fullTranscript() }}</p>
+              </div>
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+
+      <!-- Search Results Info -->
+      @if (searchQuery() && segments().length > 0) {
+        <div class="search-results-info">
+          @if (hasSearchResults()) {
+            <mat-icon>check_circle</mat-icon>
+            <span>Found {{ filteredSegments().length }} result(s) for "{{ searchQuery() }}"</span>
+          } @else {
+            <mat-icon>search_off</mat-icon>
+            <span>No results found for "{{ searchQuery() }}"</span>
+          }
+        </div>
+      }
     </section>
   </div>
 </div>
+

@@ -17,11 +17,6 @@ $light-theme: mat.m2-define-light-theme((
 
 @include mat.all-component-themes($light-theme);
 
-/* ========================================
-   Modern Design System - Premium UI
-   Inspired by Apple, OpenAI, and modern web
-   ======================================== */
-
 :root {
   /* Colors - Light Mode */
   --bg-primary: #fafafa;
@@ -48,6 +43,10 @@ $light-theme: mat.m2-define-light-theme((
   --accent-hover: #4a4acf;
   --accent-light: #f0f0ff;
   --accent-glow: rgba(94, 92, 230, 0.3);
+  /* New: secondary accent + rgb tokens */
+  --accent-secondary: #764ba2;
+  --accent-primary-rgb: 94, 92, 230;
+  --accent-rgb: var(--accent-primary-rgb);
 
   /* Semantic Colors */
   --success: #34c759;
@@ -58,6 +57,7 @@ $light-theme: mat.m2-define-light-theme((
   --error-bg: #ffebea;
   --info: #007aff;
   --info-bg: #e6f2ff;
+  --info-rgb: 0, 122, 255;
 
   /* Glass Effects */
   --glass-bg: rgba(255, 255, 255, 0.85);
@@ -125,6 +125,10 @@ $light-theme: mat.m2-define-light-theme((
   /* Container */
   --container-width: 1200px;
   --container-padding: var(--space-6);
+
+  /* New: subtle alpha backgrounds (light) */
+  --bg-secondary-alpha: rgba(0, 0, 0, 0.03);
+  --bg-secondary-alpha-heavy: rgba(0, 0, 0, 0.06);
 }
 
 /* Dark Mode */
@@ -154,6 +158,10 @@ $light-theme: mat.m2-define-light-theme((
     --warning-bg: rgba(255, 149, 0, 0.15);
     --error-bg: rgba(255, 59, 48, 0.15);
     --info-bg: rgba(0, 122, 255, 0.15);
+
+    /* New: subtle alpha backgrounds (dark) */
+    --bg-secondary-alpha: rgba(255, 255, 255, 0.06);
+    --bg-secondary-alpha-heavy: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -204,20 +212,22 @@ body {
   -webkit-backdrop-filter: blur(var(--blur-md));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
 }
 
 .glass-surface-strong {
   background: var(--glass-bg-strong);
   backdrop-filter: blur(var(--blur-md));
   -webkit-backdrop-filter: blur(var(--blur-md));
+  border-radius: var(--radius-md);
 }
 
-.glass-surface-medium {  background: rgba(255, 255, 255, 0.05);
+.glass-surface-medium {
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow:
     0 8px 32px 0 rgba(31, 38, 135, 0.15),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
@@ -244,7 +254,7 @@ body {
   padding: var(--space-2) var(--space-3);
   background: var(--bg-tertiary);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -258,7 +268,8 @@ body {
 }
 
 /* Divider */
-.soft-divider {
+.soft-divider,
+.divider {
   height: 1px;
   background: linear-gradient(to right, transparent, var(--glass-border) 50%, transparent);
   margin: var(--space-8) 0;
@@ -284,10 +295,91 @@ p {
   line-height: 1.6;
 }
 
+/* Shared section header/icon utilities */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  position: relative;
+  flex-wrap: wrap;
+}
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+  flex: 1;
+}
+.section-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  color: var(--accent-primary);
+}
+
+/* CTA buttons shared styles */
+.btn-cta,
+.record-button,
+.analyze-button,
+.action-button {
+  min-width: var(--cta-min-width, 240px);
+  height: 56px;
+  font-size: 1.0625rem;
+  box-shadow: var(--shadow-lg) !important;
+  transition: all 0.2s ease !important;
+}
+.btn-cta:hover,
+.record-button:hover,
+.analyze-button:hover,
+.action-button:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: var(--shadow-xl) !important;
+}
+
+/* Upload button shared tweak */
+.upload-button {
+  height: 40px;
+  color: var(--text-primary) !important;
+}
+
+/* Score circle utility with CSS vars for sizing */
+.score-circle {
+  --score-size: 200px;
+  width: var(--score-size);
+  height: var(--score-size);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-xl), 0 0 60px var(--accent-glow);
+  animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  position: relative;
+}
+.score-circle-inner {
+  --score-inner-size: 170px;
+  width: var(--score-inner-size);
+  height: var(--score-inner-size);
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+/* Gradient text for scores */
+.score-value {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Buttons Override */
 .mat-mdc-raised-button,
 .mat-mdc-unelevated-button {
-  border-radius: var(--radius-full) !important;
+  border-radius: var(--radius-sm) !important;
   font-weight: 600 !important;
   text-transform: none !important;
   letter-spacing: 0 !important;
@@ -309,7 +401,7 @@ p {
 
 .mat-mdc-outlined-button,
 .mat-mdc-stroked-button {
-  border-radius: var(--radius-full) !important;
+  border-radius: var(--radius-sm) !important;
   font-weight: 600 !important;
   text-transform: none !important;
   padding: 12px 24px !important;
@@ -325,7 +417,7 @@ p {
 }
 
 .mat-mdc-button {
-  border-radius: var(--radius-full) !important;
+  border-radius: var(--radius-sm) !important;
   font-weight: 500 !important;
   text-transform: none !important;
   transition: all var(--transition-fast) !important;
@@ -337,12 +429,12 @@ p {
 }
 
 .mat-mdc-text-field-wrapper {
-  border-radius: var(--radius-md) !important;
+  border-radius: var(--radius-sm) !important;
   background: var(--bg-secondary) !important;
 }
 
 .mdc-text-field--outlined {
-  border-radius: var(--radius-md) !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 .mdc-text-field--outlined .mdc-notched-outline__leading,
@@ -357,7 +449,6 @@ p {
   border-color: var(--accent-primary) !important;
 }
 
-/* Form Field Labels */
 .mat-mdc-form-field-label,
 .mdc-floating-label {
   color: var(--text-secondary) !important;
@@ -411,11 +502,6 @@ textarea.mat-mdc-input-element {
 .mat-mdc-select-arrow {
   color: var(--text-secondary) !important;
 }
-
-/* ========================================
-   Reusable Components (App-wide)
-   ======================================== */
-/* Intro Section */
 .intro-section {
   text-align: center;
   margin-bottom: var(--space-12);
@@ -434,7 +520,7 @@ textarea.mat-mdc-input-element {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: var(--font-weight-semibold);
   margin-bottom: var(--space-4);
@@ -491,7 +577,7 @@ textarea.mat-mdc-input-element {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   margin-bottom: var(--space-6);
   font-weight: var(--font-weight-medium);
   font-size: 0.9375rem;
@@ -513,9 +599,6 @@ textarea.mat-mdc-input-element {
 
 .alert mat-icon { flex-shrink: 0; }
 
-/* ========================================
-   Global Animations
-   ======================================== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -529,4 +612,36 @@ textarea.mat-mdc-input-element {
 @keyframes pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.06); opacity: 0.95; }
+}
+
+/* New: common animations used across components */
+@keyframes scaleIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes recordPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.mat-mdc-card,
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel,
+.mat-mdc-dialog-container .mdc-dialog__surface,
+.mat-mdc-snack-bar-container {
+  border-radius: var(--radius-md) !important;
+}
+
+.mat-mdc-chip {
+  border-radius: var(--radius-sm) !important;
+}
+
+.mat-mdc-tab-group .mat-mdc-tab-labels {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
+}
+
+.mat-mdc-tab-group .mat-mdc-tab-body-wrapper {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
 }

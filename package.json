@@ -8,7 +8,13 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "start:lan": "ng serve --host 0.0.0.0 --port 4200 --ssl true --ssl-cert .\\certs\\cert.pem --ssl-key .\\certs\\cert-key.pem --proxy-config proxy.conf.json",
-    "test": "ng test"
+    "test": "ng test",
+    "e2e": "cypress run",
+    "e2e:open": "cypress open",
+    "e2e:headless": "cypress run --headless",
+    "e2e:chrome": "cypress run --browser chrome",
+    "e2e:firefox": "cypress run --browser firefox",
+    "deploy": "ng build --base-href /pronunciation-app/ && ngh --dir dist/pronunciation-app/browser"
   },
   "prettier": {
     "overrides": [
@@ -39,7 +45,10 @@
     "@angular/build": "20.1.0",
     "@angular/cli": "20.1.0",
     "@angular/compiler-cli": "20.1.0",
+    "@cypress/schematic": "^4.1.4",
     "@types/jasmine": "~5.1.0",
+    "angular-cli-ghpages": "^2.0.3",
+    "cypress": "^14.5.4",
     "jasmine-core": "~5.8.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
