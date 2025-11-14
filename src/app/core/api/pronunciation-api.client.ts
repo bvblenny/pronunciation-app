@@ -119,8 +119,8 @@ export class PronunciationApiClient {
   transcribeAudio(request: TranscribeRequest): Observable<TranscriptionResponse> {
     const endpoint = this.apiConfig.getEndpoint('transcription', 'transcribe');
     const formData = new FormData();
-    formData.append('file', request.file);
-    
+    formData.append('audio', request.file);
+
     const params = new HttpParams()
       .set('languageCode', request.languageCode ?? 'en-US');
     
