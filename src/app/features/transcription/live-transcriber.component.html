@@ -125,36 +125,11 @@
         </div>
       </div>
 
-      <div class="transcript-display glass-surface">
-        @if (segments().length === 0 && !interim()) {
-          <div class="empty-state">
-            <mat-icon>mic_none</mat-icon>
-            <p>Your transcript will appear here</p>
-            <span>Start speaking or upload a file to begin</span>
-          </div>
-        } @else {
-          <div class="transcript-container">
-            @for (s of segments(); track s.at) {
-              <div class="transcript-item" (click)="speak(s.text)">
-                <div class="transcript-meta">
-                  <span class="transcript-timestamp">{{ formatMs(s.at) }}</span>
-                  <div class="transcript-connector"></div>
-                </div>
-                <p class="transcript-text">{{ s.text }}</p>
-              </div>
-            }
-            @if (interim()) {
-              <div class="transcript-item interim-item">
-                <div class="transcript-meta">
-                  <span class="transcript-timestamp">Live</span>
-                  <div class="transcript-connector"></div>
-                </div>
-                <p class="transcript-text interim">{{ interim() }}</p>
-              </div>
-            }
-          </div>
-        }
-      </div>
+      <app-transcript-text
+        [segmentList]="segments()"
+        [interimText]="interim()"
+        (segmentSpeak)="speak($event)"
+      ></app-transcript-text>
     </section>
   </div>
 </div>

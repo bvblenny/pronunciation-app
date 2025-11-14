@@ -11,6 +11,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PronunciationService } from '../../core/services';
 import { TranscriptionResponse } from '../../core/api';
+import { TranscriptTextComponent } from './components/transcript-text.component';
 
 interface TranscriptSegment { text: string; at: number; }
 
@@ -28,6 +29,7 @@ interface TranscriptSegment { text: string; at: number; }
     MatSelectModule,
     MatProgressBarModule,
     MatTooltipModule,
+    TranscriptTextComponent,
   ],
   templateUrl: './live-transcriber.component.html',
   styleUrl: './live-transcriber.component.scss'
