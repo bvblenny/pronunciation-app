@@ -35,6 +35,12 @@ Open https://localhost:4200 (or http://localhost:4200 if not using SSL) in your 
 - Transcription
   - Upload audio/video to /api/transcription/transcribe and display transcript + segments with timestamps
   - Browser live transcription using the Web Speech API or file upload
+  - **NEW: Interactive Text View** - Mobile-first, readable text display with:
+    - Word and sentence level interactions
+    - Click on text segments for detailed information
+    - Extensible overlay system for future enhancements (pronunciation guides, translations, etc.)
+    - Full accessibility support (keyboard navigation, screen readers)
+    - See [Interactive Text View Documentation](docs/INTERACTIVE_TEXT_VIEW.md) for details
 
 ## API contracts
 

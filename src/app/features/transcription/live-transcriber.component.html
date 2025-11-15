@@ -225,6 +225,26 @@
         [(selectedIndex)]="selectedTabIndex"
         animationDuration="300ms">
 
+        <!-- Interactive Text View (New Primary View) -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">touch_app</mat-icon>
+            Interactive
+          </ng-template>
+
+          <div class="transcript-display glass-surface interactive-view">
+            @if (segments().length === 0 && !interim()) {
+              <div class="empty-state">
+                <mat-icon>touch_app</mat-icon>
+                <p>Interactive text view</p>
+                <span>Click on words or sentences for detailed information</span>
+              </div>
+            } @else {
+              <app-interactive-text-view [transcriptSegments]="segments()" />
+            }
+          </div>
+        </mat-tab>
+
         <!-- Timeline View -->
         <mat-tab>
           <ng-template mat-tab-label>
