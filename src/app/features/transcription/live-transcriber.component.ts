@@ -14,6 +14,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatChipsModule } from '@angular/material/chips';
 import { PronunciationService, SubtitleService, TranscriptionResponse, SubtitleFormat } from '../../core';
+import { InteractiveTextViewComponent } from './components/interactive-text-view.component';
 
 interface TranscriptSegment {
   text: string;
@@ -40,6 +41,7 @@ interface TranscriptSegment {
     MatTabsModule,
     MatSlideToggleModule,
     MatChipsModule,
+    InteractiveTextViewComponent,
   ],
   templateUrl: './live-transcriber.component.html',
   styleUrl: './live-transcriber.component.scss'
