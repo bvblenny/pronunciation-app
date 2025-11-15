@@ -28,8 +28,8 @@ export type SegmentType = 'word' | 'sentence';
       [attr.tabindex]="0"
       [attr.role]="'button'"
       [attr.aria-label]="'Select text: ' + text()"
-      (keydown.enter)="onClick($event)"
-      (keydown.space)="onClick($event)">{{ text() }}</span>`,
+      (keydown.enter)="onKeyDown($event)"
+      (keydown.space)="onKeyDown($event)">{{ text() }}</span>`,
   styles: [`
     .text-segment {
       position: relative;
@@ -117,7 +117,7 @@ export class TextSegmentComponent {
   onSegmentClick = output<{ text: string; type: SegmentType; index: number; event: MouseEvent | KeyboardEvent }>();
   onSegmentHover = output<{ text: string; type: SegmentType; index: number; isHovering: boolean }>();
 
-  onClick(event: MouseEvent | KeyboardEvent) {
+  onClick(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.onSegmentClick.emit({
@@ -125,6 +125,18 @@ export class TextSegmentComponent {
       type: this.type(),
       index: this.index(),
       event
+    });
+  }
+
+  onKeyDown(event: Event) {
+    const kbEvent = event as KeyboardEvent;
+    kbEvent.preventDefault();
+    kbEvent.stopPropagation();
+    this.onSegmentClick.emit({
+      text: this.text(),
+      type: this.type(),
+      index: this.index(),
+      event: kbEvent
     });
   }
 
