@@ -23,7 +23,7 @@ import {
 })
 export class PronunciationService {
   private readonly apiClient = inject(PronunciationApiClient);
-  
+
   // Cache languages as a signal
   private languagesCache = signal<TranscriptionLanguage[]>([]);
 
@@ -108,7 +108,7 @@ export class PronunciationService {
    * Transcribe an uploaded audio or video file via backend
    */
   transcribeAudio(file: File, languageCode: string = 'en-US'): Observable<TranscriptionResponse> {
-    return this.apiClient.transcribeAudio({ file, languageCode });
+    return this.apiClient.transcribeAudio({ audio: file, languageCode });
   }
 
   /**

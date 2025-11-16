@@ -32,7 +32,7 @@ export interface EvaluateProsodyRequest {
 }
 
 export interface TranscribeRequest {
-  file: File;
+  audio: File;
   languageCode?: string;
 }
 
@@ -54,11 +54,11 @@ export class PronunciationApiClient {
     const endpoint = this.apiConfig.getEndpoint('pronunciation', 'analyzeDetailed');
     const formData = new FormData();
     formData.append('audio', request.audio);
-    
+
     const params = new HttpParams()
       .set('referenceText', request.referenceText)
       .set('languageCode', request.languageCode ?? 'en-US');
-    
+
     return this.http.post<DetailedAnalysisDto>(`${endpoint}?${params.toString()}`, formData);
   }
 
@@ -71,7 +71,7 @@ export class PronunciationApiClient {
     formData.append('audio', request.audio);
     formData.append('referenceText', request.referenceText);
     formData.append('languageCode', request.languageCode ?? 'en-US');
-    
+
     return this.http.post<PronunciationScore>(endpoint, formData);
   }
 
@@ -83,7 +83,7 @@ export class PronunciationApiClient {
     const formData = new FormData();
     formData.append('audio', audio);
     formData.append('referenceText', referenceText);
-    
+
     return this.http.post<PronunciationEvaluationResult>(endpoint, formData);
   }
 
@@ -94,11 +94,11 @@ export class PronunciationApiClient {
     const endpoint = this.apiConfig.getEndpoint('prosody', 'evaluate');
     const formData = new FormData();
     formData.append('audio', request.audio);
-    
+
     const params = new HttpParams()
       .set('referenceText', request.referenceText ?? '')
       .set('languageCode', request.languageCode ?? 'en-US');
-    
+
     return this.http.post<ProsodyScoreDto>(`${endpoint}?${params.toString()}`, formData);
   }
 
@@ -109,7 +109,7 @@ export class PronunciationApiClient {
     const endpoint = this.apiConfig.getEndpoint('prosody', 'features');
     const formData = new FormData();
     formData.append('audio', audio);
-    
+
     return this.http.post<ProsodyFeatures>(endpoint, formData);
   }
 
@@ -119,11 +119,11 @@ export class PronunciationApiClient {
   transcribeAudio(request: TranscribeRequest): Observable<TranscriptionResponse> {
     const endpoint = this.apiConfig.getEndpoint('transcription', 'transcribe');
     const formData = new FormData();
-    formData.append('file', request.file);
-    
+    formData.append('audio', request.audio);
+
     const params = new HttpParams()
       .set('languageCode', request.languageCode ?? 'en-US');
-    
+
     return this.http.post<TranscriptionResponse>(`${endpoint}?${params.toString()}`, formData);
   }
 

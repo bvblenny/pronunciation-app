@@ -20,11 +20,11 @@ export class ApiConfigService {
   getEndpoint(category: string, action: string): string {
     const endpoints = this.config.endpoints as any;
     const endpoint: ApiEndpointConfig | undefined = endpoints[category]?.[action];
-    
+
     if (!endpoint) {
       throw new Error(`Unknown endpoint: ${category}.${action}`);
     }
-    
+
     return `${this.config.baseUrl}${endpoint.path}`;
   }
 

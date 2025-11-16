@@ -22,28 +22,26 @@ export interface TranscriptSegment {
         </div>
       } @else {
         <div class="transcript-flow">
-          @for (paragraph of paragraphs(); track paragraph.index) {
-            <p class="transcript-paragraph">
-              @for (word of paragraph.words; track word.index) {
-                <app-text-segment
-                  [data]="word"
-                  (segmentClick)="onSegmentClick($event)"
-                  (segmentHover)="onSegmentHover($event)"
-                ></app-text-segment>@if (word.index < paragraph.words.length - 1) {<span> </span>}
-              }
-            </p>
-          }
-          @if (interim()) {
-            <p class="transcript-paragraph interim-paragraph">
-              @for (word of interimWords(); track word.index) {
-                <app-text-segment
-                  [data]="word"
-                  (segmentClick)="onSegmentClick($event)"
-                  (segmentHover)="onSegmentHover($event)"
-                ></app-text-segment>@if (word.index < interimWords().length - 1) {<span> </span>}
-              }
-            </p>
-          }
+          <div class="transcript-inline" aria-label="Transcript text">
+            @for (word of allWords(); track word.globalIndex) {
+              <app-text-segment
+                [data]="word"
+                (segmentClick)="onSegmentClick($event)"
+                (segmentHover)="onSegmentHover($event)"
+              ></app-text-segment>
+            }
+            @if (interim()) {
+              <span class="interim-inline">
+                @for (word of interimWords(); track word.index) {
+                  <app-text-segment
+                    [data]="word"
+                    (segmentClick)="onSegmentClick($event)"
+                    (segmentHover)="onSegmentHover($event)"
+                  ></app-text-segment>
+                }
+              </span>
+            }
+          </div>
         </div>
       }
     </div>
@@ -101,24 +99,23 @@ export interface TranscriptSegment {
       line-height: var(--line-height-relaxed);
     }
 
-    .transcript-paragraph {
+    /* Inline continuous flow - no paragraph breaks */
+    .transcript-inline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.35rem;
       font-size: 1.125rem;
-      line-height: 1.8;
+      line-height: 1.7;
       color: var(--text-primary);
-      margin: 0 0 var(--space-5) 0;
       text-align: left;
-      font-weight: var(--font-weight-regular);
-      letter-spacing: 0.01em;
     }
 
-    .transcript-paragraph:last-child {
-      margin-bottom: 0;
-    }
-
-    .interim-paragraph {
-      color: var(--info);
+    /* Interim words visually distinct but inline */
+    .interim-inline {
+      opacity: 0.7;
       font-style: italic;
-      opacity: 0.9;
+      display: contents;
       animation: fadeIn 0.3s ease-out;
     }
 
@@ -130,14 +127,14 @@ export interface TranscriptSegment {
         padding: var(--space-4);
       }
 
-      .transcript-paragraph {
+      .transcript-inline {
         font-size: 1rem;
-        line-height: 1.7;
+        line-height: 1.6;
       }
     }
 
     @media (max-width: 480px) {
-      .transcript-paragraph {
+      .transcript-inline {
         font-size: 0.9375rem;
       }
     }
@@ -188,7 +185,6 @@ export class TranscriptTextComponent {
   overlayContent = signal<OverlayContent | null>(null);
   showOverlay = signal<boolean>(false);
 
-  // Convert segments into paragraphs with words
   paragraphs = computed(() => {
     const segs = this.segments();
     return segs.map((seg, segIndex) => {
@@ -207,6 +203,18 @@ export class TranscriptTextComponent {
     });
   });
 
+  allWords = computed(() => {
+    const paragraphs = this.paragraphs();
+    const flattened: Array<SegmentData & { globalIndex: number }> = [];
+    let counter = 0;
+    for (const p of paragraphs) {
+      for (const w of p.words) {
+        flattened.push({ ...w, globalIndex: counter++ });
+      }
+    }
+    return flattened;
+  });
+
   // Convert interim text into words
   interimWords = computed(() => {
     const text = this.interim();
@@ -221,7 +229,6 @@ export class TranscriptTextComponent {
   });
 
   private splitIntoWords(text: string): string[] {
-    // Split by spaces and filter out empty strings
     return text.split(/\s+/).filter(w => w.length > 0);
   }
 
@@ -229,18 +236,17 @@ export class TranscriptTextComponent {
     this.selectedSegment.set(segment);
     this.overlayContent.set({
       title: 'Word Details',
-      description: `You selected: "${segment.text}". This is where detailed information about pronunciation, grammar, or translations could appear.`,
+      description: `You selected: "${segment.text}".`,
       metadata: segment.metadata,
       customData: true // This triggers the extensibility placeholder
     });
     this.showOverlay.set(true);
 
-    // Also speak the word
-    this.segmentSpeak.emit(segment.text);
+    // this.segmentSpeak.emit(segment.text);
   }
 
   onSegmentHover(segment: SegmentData) {
-    // Could be used for preview tooltips in the future
+    // TODO: use for preview tooltips
   }
 
   onOverlayClosed() {

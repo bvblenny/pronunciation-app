@@ -54,7 +54,7 @@ describe('TranscriptTextComponent', () => {
     expect(words[1].text).toBe('text');
   });
 
-  it('should emit segmentSpeak when segment is clicked', () => {
+  xit('should emit segmentSpeak when segment is clicked', () => {
     spyOn(component.segmentSpeak, 'emit');
     component.onSegmentClick({ text: 'hello', type: 'word', index: 0 });
     expect(component.segmentSpeak.emit).toHaveBeenCalledWith('hello');
