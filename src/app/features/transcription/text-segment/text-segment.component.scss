@@ -1,0 +1,25 @@
+.text-segment {
+      display: inline;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border-radius: 4px;
+      padding: 2px 0;
+    }
+
+    .text-segment--word {
+      position: relative;
+    }
+
+    .text-segment--word:hover {
+      background: var(--accent-light);
+      color: var(--accent-primary);
+      box-shadow: 0 2px 8px rgba(94, 92, 230, 0.15);
+    }
+
+    .text-segment--sentence {
+      display: inline;
+    }
+
+    .text-segment--hovered {
+      background: var(--accent-light);
+    }

@@ -1,0 +1,10 @@
+<span
+  class="text-segment"
+  [class.text-segment--word]="data.type === 'word'"
+  [class.text-segment--sentence]="data.type === 'sentence'"
+  [class.text-segment--hovered]="isHovered"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
+  (click)="onClick($event)"
+>{{ data.text }}
+</span>

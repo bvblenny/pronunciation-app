@@ -5,6 +5,6 @@ import {
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', component: PronunciationScorerComponent },
-  { path: 'transcribe', loadComponent: () => import('./features/transcription/live-transcriber.component').then(m => m.LiveTranscriberComponent) },
+  { path: 'transcribe', loadComponent: () => import('./features/transcription/live-transcriber/live-transcriber.component').then(m => m.LiveTranscriberComponent) },
   { path: '**', redirectTo: '' }
 ];

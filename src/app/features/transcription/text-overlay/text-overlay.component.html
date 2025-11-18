@@ -1,0 +1,54 @@
+<div class="overlay-backdrop"
+     [@fadeInOut]
+     (click)="onBackdropClick()"
+     *ngIf="isVisible">
+  <div class="overlay-content"
+       #overlayElement
+       (click)="$event.stopPropagation()"
+       [@slideInOut]>
+    <div class="overlay-header">
+      <h3 class="overlay-title">{{ content?.title || 'Text Details' }}</h3>
+      <button mat-icon-button
+              class="overlay-close"
+              (click)="close()"
+              aria-label="Close overlay">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="overlay-body">
+      <div class="selected-text">
+        <span class="text-label">Selected:</span>
+        <span class="text-value">"{{ selectedSegment?.text }}"</span>
+      </div>
+
+      <div class="overlay-section">
+        <p class="overlay-description">
+          {{ content?.description || 'This is a placeholder for detailed information about the selected text segment.' }}
+        </p>
+      </div>
+
+      <div class="overlay-extensible" *ngIf="content?.customData">
+        <div class="extension-placeholder">
+          <mat-icon>info_outline</mat-icon>
+
+        </div>
+      </div>
+
+      <div class="overlay-meta" *ngIf="content?.metadata">
+        <div class="meta-item">
+          <span class="meta-label">Type:</span>
+          <span class="meta-value">{{ selectedSegment?.type }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Position:</span>
+          <span class="meta-value">{{ selectedSegment?.index }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay-footer">
+      <button mat-stroked-button (click)="close()">Close</button>
+    </div>
+  </div>
+</div>

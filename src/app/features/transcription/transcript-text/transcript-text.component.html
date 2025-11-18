@@ -1,0 +1,40 @@
+<div class="transcript-text-container">
+  @if (segments().length === 0 && !interim()) {
+    <div class="empty-state">
+      <div class="empty-icon">📝</div>
+      <p class="empty-title">Your transcript will appear here</p>
+      <span class="empty-subtitle">Start speaking or upload a file to begin</span>
+    </div>
+  } @else {
+    <div class="transcript-flow">
+      <div class="transcript-inline" aria-label="Transcript text">
+        @for (word of allWords(); track word.globalIndex) {
+          <app-text-segment
+            [data]="word"
+            (segmentClick)="onSegmentClick($event)"
+            (segmentHover)="onSegmentHover($event)"
+          ></app-text-segment>
+        }
+        @if (interim()) {
+          <span class="interim-inline">
+            @for (word of interimWords(); track word.index) {
+              <app-text-segment
+                [data]="word"
+                (segmentClick)="onSegmentClick($event)"
+                (segmentHover)="onSegmentHover($event)"
+              ></app-text-segment>
+            }
+          </span>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<app-text-overlay
+  [selectedSegment]="selectedSegment()"
+  [content]="overlayContent()"
+  [isVisible]="showOverlay()"
+  (closed)="onOverlayClosed()"
+></app-text-overlay>
+
