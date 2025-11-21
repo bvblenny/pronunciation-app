@@ -1,14 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { of, throwError } from 'rxjs';
 import { TranscriptTextComponent } from './transcript-text.component';
+import { DatamuseService } from '../../../core';
 
 describe('TranscriptTextComponent', () => {
   let component: TranscriptTextComponent;
   let fixture: ComponentFixture<TranscriptTextComponent>;
+  let datamuseServiceSpy: jasmine.SpyObj<DatamuseService>;
 
   beforeEach(async () => {
+    datamuseServiceSpy = jasmine.createSpyObj('DatamuseService', ['getWordInfo']);
+
     await TestBed.configureTestingModule({
-      imports: [TranscriptTextComponent, BrowserAnimationsModule]
+      imports: [TranscriptTextComponent, BrowserAnimationsModule, HttpClientTestingModule],
+      providers: [{ provide: DatamuseService, useValue: datamuseServiceSpy }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TranscriptTextComponent);
@@ -61,11 +68,13 @@ describe('TranscriptTextComponent', () => {
   });
 
   it('should show overlay when segment is clicked', () => {
+    datamuseServiceSpy.getWordInfo.and.returnValue(of([]));
     component.onSegmentClick({ text: 'hello', type: 'word', index: 0 });
     expect(component.showOverlay()).toBe(true);
   });
 
   it('should set selected segment when segment is clicked', () => {
+    datamuseServiceSpy.getWordInfo.and.returnValue(of([]));
     const segment = { text: 'hello', type: 'word' as const, index: 0 };
     component.onSegmentClick(segment);
     expect(component.selectedSegment()).toEqual(segment);
@@ -89,5 +98,30 @@ describe('TranscriptTextComponent', () => {
     expect(paragraphs.length).toBe(2);
     expect(paragraphs[0].words.length).toBe(2);
     expect(paragraphs[1].words.length).toBe(2);
+  });
+
+  it('should populate overlay description from Datamuse on success', () => {
+    const apiResponse = [{ word: 'hello', defs: ['n\ta greeting'] }];
+    datamuseServiceSpy.getWordInfo.and.returnValue(of(apiResponse as any));
+
+    const segment = { text: 'hello', type: 'word' as const, index: 0 };
+    component.onSegmentClick(segment);
+
+    expect(component.isOverlayLoading()).toBeFalse();
+    const content = component.overlayContent();
+    expect(content).toBeTruthy();
+    expect(content!.description).toContain('Definition of "hello"');
+  });
+
+  it('should handle Datamuse error gracefully', () => {
+    datamuseServiceSpy.getWordInfo.and.returnValue(throwError(() => new Error('Network error')));
+
+    const segment = { text: 'hello', type: 'word' as const, index: 0 };
+    component.onSegmentClick(segment);
+
+    expect(component.isOverlayLoading()).toBeFalse();
+    const content = component.overlayContent();
+    expect(content).toBeTruthy();
+    expect(content!.description).toContain('Could not load word details');
   });
 });
