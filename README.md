@@ -14,7 +14,21 @@ Language learning frontend with a modern UI:
 npm install
 ```
 
-3) Start the dev server with proxy to the backend:
+3) **Configure API Key** (if required by backend):
+
+   Create a `.env` file in the root directory (copy from `.env.example`):
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit the `.env` file and set your API key:
+   ```
+   API_KEY=your-actual-api-key-here
+   ```
+   
+   **⚠️ SECURITY WARNING**: Never commit the `.env` file to version control. It's already included in `.gitignore`.
+
+4) Start the dev server with proxy to the backend:
 
 ```
 npm run start:proxy
@@ -50,5 +64,62 @@ Open https://localhost:4200 (or http://localhost:4200 if not using SSL) in your 
 
 Errors handled in UI for common cases:
 - 400 invalid/missing file or unsupported media type
+- 401 missing or expired API key
+- 403 invalid or unauthorized API key
 - 413 payload too large
 - 500 generic failure
+
+## API Key Configuration
+
+The frontend now supports API key authentication for secure communication with the backend.
+
+### Development Setup
+
+1. **Copy the example environment file**:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit `.env` and add your API key**:
+   ```
+   API_KEY=your-api-key-here
+   ```
+
+3. **Configure the environment file** (if needed):
+   - For development: Edit `src/environments/environment.ts`
+   - For production: Edit `src/environments/environment.prod.ts`
+   
+   The API key from your `.env` file should be set in the `apiKey` field.
+
+### Production Deployment
+
+For production deployments, set the API key via environment variables:
+
+```bash
+export API_KEY=your-production-api-key
+```
+
+Or in your deployment configuration (e.g., Docker, Kubernetes, Cloud Platform):
+```yaml
+env:
+  - name: API_KEY
+    value: your-production-api-key
+```
+
+### Security Best Practices
+
+⚠️ **IMPORTANT SECURITY NOTES**:
+- **NEVER** commit API keys to version control
+- **NEVER** expose API keys in client-side code that's publicly accessible
+- Store API keys in environment variables or secure secret management systems
+- Rotate API keys regularly
+- Use different API keys for development, staging, and production environments
+- The `.env` file is already added to `.gitignore` to prevent accidental commits
+
+### Troubleshooting
+
+If you see authentication errors (401 or 403):
+1. Verify your API key is correctly set in the environment configuration
+2. Check that the API key is valid and not expired
+3. Ensure the backend service is configured to accept your API key
+4. Check browser console for detailed error messages (development mode only)

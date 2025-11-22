@@ -11,6 +11,7 @@ export interface ApiEndpointConfig {
 export interface ApiConfig {
   baseUrl: string;
   defaultVersion: string;
+  apiKey?: string;
   endpoints: {
     pronunciation: {
       analyzeDetailed: ApiEndpointConfig;
@@ -31,6 +32,7 @@ export interface ApiConfig {
 export const API_CONFIG: ApiConfig = {
   baseUrl: '/api',
   defaultVersion: 'v1',
+  apiKey: undefined,  // Will be loaded from environment
   endpoints: {
     pronunciation: {
       analyzeDetailed: { path: '/pronunciation/analyze-detailed' },
