@@ -16,17 +16,16 @@ npm install
 
 3) **Configure API Key** (if required by backend):
 
-   Create a `.env` file in the root directory (copy from `.env.example`):
-   ```bash
-   cp .env.example .env
+   For local development, edit `src/environments/environment.ts` and set your API key:
+   ```typescript
+   export const environment = {
+     production: false,
+     apiKey: 'your-actual-api-key-here',  // Your development API key
+     apiBaseUrl: '/api'
+   };
    ```
    
-   Edit the `.env` file and set your API key:
-   ```
-   API_KEY=your-actual-api-key-here
-   ```
-   
-   **⚠️ SECURITY WARNING**: Never commit the `.env` file to version control. It's already included in `.gitignore`.
+   **⚠️ SECURITY WARNING**: Do NOT commit your API key to version control. Only commit environment files with empty or placeholder values.
 
 4) Start the dev server with proxy to the backend:
 
@@ -75,36 +74,48 @@ The frontend now supports API key authentication for secure communication with t
 
 ### Development Setup
 
-1. **Copy the example environment file**:
+1. **Edit the development environment file**:
    ```bash
-   cp .env.example .env
+   # Open src/environments/environment.ts
    ```
 
-2. **Edit `.env` and add your API key**:
-   ```
-   API_KEY=your-api-key-here
+2. **Set your API key**:
+   ```typescript
+   export const environment = {
+     production: false,
+     apiKey: 'your-development-api-key-here',
+     apiBaseUrl: '/api'
+   };
    ```
 
-3. **Configure the environment file** (if needed):
-   - For development: Edit `src/environments/environment.ts`
-   - For production: Edit `src/environments/environment.prod.ts`
-   
-   The API key from your `.env` file should be set in the `apiKey` field.
+3. **Important**: Do NOT commit your API key. Use git to exclude changes to environment files:
+   ```bash
+   git update-index --skip-worktree src/environments/environment.ts
+   ```
 
 ### Production Deployment
 
-For production deployments, set the API key via environment variables:
+For production, you have several options:
 
+**Option 1: Build-time Environment Variable Replacement**
+Use a build script to replace the API key during CI/CD:
 ```bash
-export API_KEY=your-production-api-key
+# In your build pipeline
+sed -i "s/apiKey: ''/apiKey: '$API_KEY'/" src/environments/environment.prod.ts
+ng build --configuration production
 ```
 
-Or in your deployment configuration (e.g., Docker, Kubernetes, Cloud Platform):
-```yaml
-env:
-  - name: API_KEY
-    value: your-production-api-key
+**Option 2: Configuration File**
+Serve a `config.json` from your web server and load it at runtime:
+```typescript
+// In a ConfigService
+loadConfig() {
+  return this.http.get<Config>('/assets/config.json');
+}
 ```
+
+**Option 3: Environment-specific Builds**
+Use Angular's file replacement feature in `angular.json` with different environment files per deployment target.
 
 ### Security Best Practices
 
