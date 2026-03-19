@@ -1,29 +1,33 @@
 <div class="pronunciation-scorer">
-  <!-- Intro Section -->
+  <!-- Hero Section -->
   <div class="intro-section">
     <div class="intro-content">
       <div class="intro-badge intro-badge--accent">
-        <span class="badge-icon">✨</span>
+        <span class="badge-dot"></span>
         <span>AI-Powered Analysis</span>
       </div>
-      <h1 class="intro-title">Perfect Your Pronunciation</h1>
+      <h1 class="intro-title">Perfect Your <span class="gradient-text">Pronunciation</span></h1>
       <p class="intro-subtitle">Get instant, detailed feedback on your speech with advanced AI analysis</p>
     </div>
   </div>
 
   <!-- Main Analysis Card -->
   <div class="analysis-card glass-surface-medium">
-    <!-- Input Section -->
-    <section class="input-section">
-      <div class="section-header">
-        <mat-icon class="section-icon">edit_note</mat-icon>
-        <h2>Reference Text</h2>
+
+    <!-- Step 1: Reference Text -->
+    <section class="step-section">
+      <div class="step-label">
+        <span class="step-number">01</span>
+        <div class="step-info">
+          <h2>Reference Text</h2>
+          <p>Enter the text you'll be reading aloud</p>
+        </div>
         <button
           mat-icon-button
           class="reset-button"
           (click)="resetForm()"
           [disabled]="isLoading() || isRecording()"
-          matTooltip="Reset form and audio">
+          matTooltip="Reset form">
           <mat-icon>refresh</mat-icon>
         </button>
       </div>
@@ -38,7 +42,7 @@
           rows="3"
           aria-label="Reference text to pronounce">
         </textarea>
-        <mat-hint>Type or paste the text you'll be speaking</mat-hint>
+        <mat-hint>Type or paste the text you'll be speaking aloud</mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="modern-select">
@@ -54,40 +58,69 @@
       </mat-form-field>
     </section>
 
-    <div class="divider"></div>
+    <div class="step-divider"></div>
 
-    <!-- Recording Section -->
-    <section class="recording-section">
-      <div class="section-header">
-        <mat-icon class="section-icon">mic</mat-icon>
-        <h2>Record Your Audio</h2>
+    <!-- Step 2: Record -->
+    <section class="step-section">
+      <div class="step-label">
+        <span class="step-number">02</span>
+        <div class="step-info">
+          <h2>Record Your Speech</h2>
+          <p>Use your microphone or upload an audio file</p>
+        </div>
       </div>
 
-      <div class="recording-controls">
-        @if (!isRecording()) {
-          <button
-            mat-raised-button
-            color="primary"
-            class="record-button primary-action"
-            (click)="startRecording()"
-            [disabled]="isLoading()">
-            <mat-icon>fiber_manual_record</mat-icon>
-            <span>Start Recording</span>
-          </button>
-        } @else {
-          <button
-            mat-raised-button
-            color="warn"
-            class="record-button recording-active"
-            (click)="stopRecording()">
-            <span class="recording-pulse"></span>
-            <mat-icon>stop</mat-icon>
-            <span>Stop Recording</span>
-          </button>
-        }
+      <div class="record-center">
+        <!-- Microphone Button -->
+        <div class="mic-container">
+          @if (!isRecording()) {
+            <button
+              class="mic-button"
+              (click)="startRecording()"
+              [disabled]="isLoading()"
+              aria-label="Start recording">
+              <div class="mic-ring ring-1"></div>
+              <div class="mic-ring ring-2"></div>
+              <div class="mic-ring ring-3"></div>
+              <div class="mic-face">
+                <mat-icon>mic</mat-icon>
+              </div>
+            </button>
+            <p class="mic-hint">Tap to start recording</p>
+          } @else {
+            <button
+              class="mic-button recording"
+              (click)="stopRecording()"
+              aria-label="Stop recording">
+              <div class="mic-ring ring-1 active"></div>
+              <div class="mic-ring ring-2 active"></div>
+              <div class="mic-ring ring-3 active"></div>
+              <div class="mic-face recording">
+                <mat-icon>stop</mat-icon>
+              </div>
+            </button>
 
-        <div class="soft-divider"></div>
+            <!-- Audio Waveform Visualization -->
+            <div class="waveform-bars" aria-label="Recording in progress" aria-live="polite">
+              @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
+                <div class="waveform-bar" [style.--i]="i"></div>
+              }
+            </div>
+            <p class="mic-hint recording-hint">
+              <span class="rec-dot"></span>
+              Recording... Tap to stop
+            </p>
+          }
+        </div>
 
+        <!-- Divider -->
+        <div class="or-divider">
+          <div class="or-line"></div>
+          <span>or</span>
+          <div class="or-line"></div>
+        </div>
+
+        <!-- Upload Button -->
         <button
           mat-stroked-button
           class="upload-button"
@@ -104,11 +137,21 @@
           (change)="onFileSelected($event)">
       </div>
 
+      <!-- Audio Preview -->
       @if (audioUrl()) {
         <div class="audio-preview glass-surface">
           <div class="audio-preview-header">
-            <mat-icon>audio_file</mat-icon>
-            <span>Audio Preview</span>
+            <div class="audio-file-icon">
+              <mat-icon>audio_file</mat-icon>
+            </div>
+            <div class="audio-file-info">
+              <span class="audio-file-title">Audio Preview</span>
+              <span class="audio-file-sub">Ready for analysis</span>
+            </div>
+            <div class="audio-ready-badge">
+              <mat-icon>check_circle</mat-icon>
+              Ready
+            </div>
           </div>
           <audio controls [src]="audioUrl()"></audio>
         </div>
@@ -123,25 +166,47 @@
       </div>
     }
 
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-      <button
-        mat-raised-button
-        color="primary"
-        class="analyze-button"
-        (click)="submitForScoring()"
-        [disabled]="isLoading() || !audioBlob() || !referenceText() || isRecording()">
-        <mat-icon>auto_awesome</mat-icon>
-        <span>Analyze Pronunciation</span>
-      </button>
-    </div>
+    <div class="step-divider"></div>
 
-    <!-- Loading State -->
+    <!-- Step 3: Analyze -->
+    <section class="step-section analyze-section">
+      <div class="step-label">
+        <span class="step-number">03</span>
+        <div class="step-info">
+          <h2>Analyze</h2>
+          <p>Get your AI-powered pronunciation score</p>
+        </div>
+      </div>
+
+      <div class="analyze-btn-wrap">
+        <button
+          mat-raised-button
+          color="primary"
+          class="analyze-button"
+          (click)="submitForScoring()"
+          [disabled]="isLoading() || !audioBlob() || !referenceText() || isRecording()">
+          <mat-icon>auto_awesome</mat-icon>
+          <span>Analyze Pronunciation</span>
+        </button>
+        @if (!audioBlob() || !referenceText()) {
+          <p class="analyze-hint">
+            <mat-icon>info_outline</mat-icon>
+            {{ !referenceText() ? 'Add reference text above' : 'Record or upload audio first' }}
+          </p>
+        }
+      </div>
+    </section>
+
+    <!-- Loading Overlay -->
     @if (isLoading()) {
-      <div class="loading-state">
-        <div class="loading-content">
-          <div class="loading-spinner"></div>
-          <p class="loading-text">Analyzing your pronunciation...</p>
+      <div class="loading-overlay">
+        <div class="loading-card">
+          <div class="loading-icon-wrap">
+            <div class="loading-ring"></div>
+            <mat-icon class="loading-center-icon">auto_awesome</mat-icon>
+          </div>
+          <h3 class="loading-title">Analyzing your pronunciation...</h3>
+          <p class="loading-sub">Our AI is evaluating your speech patterns</p>
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         </div>
       </div>
@@ -151,19 +216,34 @@
   <!-- Results Section -->
   @if (detailedAnalysis()) {
     <div class="results-container">
-      <!-- Overall Score Card -->
-      <div class="score-card glass-surface-strong elevate">
-        <h3 class="card-title">Overall Score</h3>
-        <div class="score-display">
-          <div class="score-circle" [style.background]="getScoreGradient(getOverallScore())">
-            <div class="score-circle-inner">
-              <span class="score-value">{{ (getOverallScore() * 100).toFixed(0) }}</span>
-              <span class="score-label">/ 100</span>
+
+      <!-- Score Hero Card -->
+      <div class="score-hero-card glass-surface-strong">
+        <div class="score-hero-inner">
+          <!-- Score Ring -->
+          <div class="score-ring-wrap">
+            <svg class="score-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-track" cx="60" cy="60" r="52"/>
+              <circle class="ring-fill"
+                      cx="60" cy="60" r="52"
+                      [style.stroke]="getOverallScore() >= 0.9 ? '#10b981' : getOverallScore() >= 0.75 ? '#6366f1' : getOverallScore() >= 0.6 ? '#f59e0b' : '#ef4444'"
+                      [style.stroke-dashoffset]="327 - (327 * getOverallScore())"/>
+            </svg>
+            <div class="score-ring-content">
+              <span class="score-number">{{ (getOverallScore() * 100).toFixed(0) }}</span>
+              <span class="score-denom">/100</span>
             </div>
           </div>
-          <div class="score-description">
-            <p class="score-rating">{{ getScoreRating(getOverallScore()) }}</p>
-            <p class="score-text">{{ getScoreMessage(getOverallScore()) }}</p>
+
+          <div class="score-details">
+            <h3 class="score-rating">{{ getScoreRating(getOverallScore()) }}</h3>
+            <p class="score-message">{{ getScoreMessage(getOverallScore()) }}</p>
+            <div class="score-level-bar">
+              <div class="score-level-fill"
+                   [style.width.%]="getOverallScore() * 100"
+                   [style.background]="getScoreGradient(getOverallScore())">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -181,17 +261,17 @@
         </div>
 
         <div class="metric-card glass-surface elevate">
-          <div class="metric-icon" style="background: var(--gradient-accent)">
+          <div class="metric-icon" style="background: var(--gradient-primary)">
             <mat-icon>speed</mat-icon>
           </div>
           <div class="metric-content">
             <span class="metric-label">Speech Rate</span>
-            <span class="metric-value">{{ detailedAnalysis()!.speechRateWpm?.toFixed(0) || 'N/A' }} WPM</span>
+            <span class="metric-value">{{ detailedAnalysis()!.speechRateWpm?.toFixed(0) || '—' }} <small>WPM</small></span>
           </div>
         </div>
 
         <div class="metric-card glass-surface elevate">
-          <div class="metric-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">
+          <div class="metric-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)">
             <mat-icon>timer</mat-icon>
           </div>
           <div class="metric-content">
@@ -201,8 +281,8 @@
         </div>
 
         <div class="metric-card glass-surface elevate">
-          <div class="metric-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">
-            <mat-icon>volume_up</mat-icon>
+          <div class="metric-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)">
+            <mat-icon>pause_circle_outline</mat-icon>
           </div>
           <div class="metric-content">
             <span class="metric-label">Pauses</span>
@@ -211,38 +291,48 @@
         </div>
       </div>
 
-      <!-- Prosody Analysis (New) -->
+      <!-- Prosody Analysis -->
       @if (prosodyScore()) {
         <app-prosody-panel class="elevate" [score]="prosodyScore()" title="Prosody Analysis"></app-prosody-panel>
       }
 
       <!-- Transcript Card -->
-      <div class="transcript-card glass-surface-strong">
-        <div class="card-header">
-          <mat-icon>text_fields</mat-icon>
-          <h3>Your Transcription</h3>
+      <div class="result-card glass-surface-strong">
+        <div class="result-card-header">
+          <div class="result-card-icon" style="background: var(--gradient-info)">
+            <mat-icon>text_fields</mat-icon>
+          </div>
+          <div>
+            <h3>Your Transcription</h3>
+            <p>What the AI heard from your recording</p>
+          </div>
         </div>
-        <p class="transcript-text">{{ detailedAnalysis()!.transcript }}</p>
+        <blockquote class="transcript-text">{{ detailedAnalysis()!.transcript }}</blockquote>
       </div>
 
       <!-- Word Analysis -->
-      <div class="word-analysis-card glass-surface-strong">
-        <div class="card-header">
-          <mat-icon>analytics</mat-icon>
-          <h3>Word-by-Word Analysis</h3>
+      <div class="result-card glass-surface-strong">
+        <div class="result-card-header">
+          <div class="result-card-icon" style="background: var(--gradient-primary)">
+            <mat-icon>analytics</mat-icon>
+          </div>
+          <div>
+            <h3>Word-by-Word Analysis</h3>
+            <p>Tap a word to see phoneme details</p>
+          </div>
         </div>
 
         <div class="word-grid-compact">
-          @for (word of detailedAnalysis()!.words; track word.index) {
+          @for (word of detailedAnalysis()!.words; track word.index; let i = $index) {
             <div class="word-item"
                  [class.word-error]="word.errorType !== 'MATCH' || (word.evaluation ?? 1) < 0.8"
                  [class.word-warning]="word.errorType === 'MATCH' && (word.evaluation ?? 1) >= 0.8 && (word.evaluation ?? 1) < 0.95"
                  [class.word-perfect]="word.errorType === 'MATCH' && (word.evaluation ?? 1) >= 0.95"
+                 [style.--word-index]="i"
                  tabindex="0"
                  role="button"
                  [attr.aria-label]="'Word: ' + (word.actual || word.expected) + ', Score: ' + ((word.evaluation ?? 1) * 100).toFixed(0) + '%'">
 
-              <!-- Primary: Word + Score (Most Important) -->
               <div class="word-primary">
                 <span class="word-text" [title]="word.expected ? (word.actual + ' → ' + word.expected) : word.actual">
                   {{ word.actual || word.expected }}
@@ -254,7 +344,6 @@
                 }
               </div>
 
-              <!-- Secondary: Status (Important) -->
               <div class="word-secondary">
                 @if (word.errorType !== 'MATCH') {
                   <span class="status-indicator error">
@@ -264,12 +353,11 @@
                 } @else {
                   <span class="status-indicator success">
                     <mat-icon>check</mat-icon>
-                    Perfect match
+                    Match
                   </span>
                 }
               </div>
 
-              <!-- Tertiary: Additional Info (Less Important) -->
               <div class="word-meta">
                 @if (word.durationSec != null) {
                   <span class="meta-item">
@@ -285,7 +373,6 @@
                 }
               </div>
 
-              <!-- Phonemes Detail (Expandable on hover) -->
               @if (word.phonemes?.length) {
                 <div class="phonemes-detail">
                   <div class="phonemes-label">Pronunciation sounds:</div>
@@ -293,7 +380,7 @@
                     @for (phoneme of word.phonemes; track phoneme.phoneme) {
                       <span class="phoneme-chip"
                             [style.background]="getPhonemeBackground(phoneme.evaluation)"
-                            [title]="'Sound: ' + phoneme.phoneme + ' - Accuracy: ' + (phoneme.evaluation * 100).toFixed(0) + '%'">
+                            [title]="'Sound: ' + phoneme.phoneme + ' — ' + (phoneme.evaluation * 100).toFixed(0) + '%'">
                         {{ phoneme.phoneme }}
                       </span>
                     }
@@ -307,10 +394,15 @@
 
       <!-- Pauses Analysis -->
       @if (detailedAnalysis()!.pauses.length) {
-        <div class="pauses-card glass-surface-strong">
-          <div class="card-header">
-            <mat-icon>timer_off</mat-icon>
-            <h3>Detected Pauses</h3>
+        <div class="result-card glass-surface-strong">
+          <div class="result-card-header">
+            <div class="result-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)">
+              <mat-icon>timer_off</mat-icon>
+            </div>
+            <div>
+              <h3>Detected Pauses</h3>
+              <p>{{ detailedAnalysis()!.pauses.length }} pauses detected in your speech</p>
+            </div>
           </div>
 
           <div class="pause-list">
@@ -324,7 +416,7 @@
                 <div class="pause-details">
                   <span class="pause-duration">{{ p.durationSec.toFixed(2) }}s pause</span>
                   @if (p.precedingWord || p.followingWord) {
-                    <span class="pause-context">between "{{ p.precedingWord || '...' }}" and "{{ p.followingWord || '...' }}"</span>
+                    <span class="pause-context">between "{{ p.precedingWord || '…' }}" and "{{ p.followingWord || '…' }}"</span>
                   }
                 </div>
               </div>

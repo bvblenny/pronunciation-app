@@ -1,14 +1,26 @@
-<div class="prosody-card glass-surface-strong" *ngIf="hasScore">
-  <div class="card-header">
-    <mat-icon>graphic_eq</mat-icon>
-    <h3>{{ title }}</h3>
+<div class="prosody-card result-card glass-surface-strong" *ngIf="hasScore">
+  <div class="result-card-header">
+    <div class="result-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+      <mat-icon>graphic_eq</mat-icon>
+    </div>
+    <div>
+      <h3>{{ title }}</h3>
+      <p>Speech rhythm, intonation, stress &amp; fluency</p>
+    </div>
   </div>
 
   <div class="prosody-summary">
-    <div class="score-circle" [style.background]="scoreGradient(currentScore()!.overallScore)">
-      <div class="score-circle-inner">
-        <span class="score-value">{{ overallPct() }}</span>
-        <span class="score-label">/ 100</span>
+    <div class="prosody-score-wrap">
+      <svg class="score-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="ring-track" cx="60" cy="60" r="52"/>
+        <circle class="ring-fill"
+                cx="60" cy="60" r="52"
+                [style.stroke]="overallPct() >= 90 ? '#10b981' : overallPct() >= 75 ? '#6366f1' : overallPct() >= 60 ? '#f59e0b' : '#ef4444'"
+                [style.stroke-dashoffset]="327 - (327 * overallPct() / 100)"/>
+      </svg>
+      <div class="score-ring-content">
+        <span class="score-number">{{ overallPct() }}</span>
+        <span class="score-denom">/100</span>
       </div>
     </div>
 
@@ -27,14 +39,10 @@
     </div>
   </div>
 
-  <mat-divider></mat-divider>
-
   <div class="diagnostics-grid">
     <div class="diagnostic-item" tabindex="0">
       <div class="diag-header">
-        <div class="diag-icon rhythm">
-          <mat-icon>equalizer</mat-icon>
-        </div>
+        <div class="diag-icon rhythm"><mat-icon>equalizer</mat-icon></div>
         <div class="diag-title">Rhythm</div>
       </div>
       <div class="diag-metrics">
@@ -52,9 +60,7 @@
 
     <div class="diagnostic-item" tabindex="0">
       <div class="diag-header">
-        <div class="diag-icon intonation">
-          <mat-icon>timeline</mat-icon>
-        </div>
+        <div class="diag-icon intonation"><mat-icon>timeline</mat-icon></div>
         <div class="diag-title">Intonation</div>
       </div>
       <div class="diag-metrics">
@@ -72,9 +78,7 @@
 
     <div class="diagnostic-item" tabindex="0">
       <div class="diag-header">
-        <div class="diag-icon stress">
-          <mat-icon>bolt</mat-icon>
-        </div>
+        <div class="diag-icon stress"><mat-icon>bolt</mat-icon></div>
         <div class="diag-title">Stress</div>
       </div>
       <div class="diag-metrics">
@@ -92,9 +96,7 @@
 
     <div class="diagnostic-item" tabindex="0">
       <div class="diag-header">
-        <div class="diag-icon pacing">
-          <mat-icon>speed</mat-icon>
-        </div>
+        <div class="diag-icon pacing"><mat-icon>speed</mat-icon></div>
         <div class="diag-title">Pacing</div>
       </div>
       <div class="diag-metrics">
@@ -112,9 +114,7 @@
 
     <div class="diagnostic-item" tabindex="0">
       <div class="diag-header">
-        <div class="diag-icon fluency">
-          <mat-icon>scatter_plot</mat-icon>
-        </div>
+        <div class="diag-icon fluency"><mat-icon>scatter_plot</mat-icon></div>
         <div class="diag-title">Fluency</div>
       </div>
       <div class="diag-metrics">

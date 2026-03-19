@@ -1,122 +1,141 @@
 <div class="live-transcriber">
-  <!-- Intro Section -->
+  <!-- Hero Section -->
   <div class="intro-section">
     <div class="intro-content">
       <div class="intro-badge intro-badge--info">
-        <span class="badge-icon">🎙️</span>
+        <span class="badge-dot"></span>
         <span>Real-Time Transcription</span>
       </div>
-      <h1 class="intro-title">Live Speech to Text</h1>
+      <h1 class="intro-title">Live <span class="gradient-text">Speech to Text</span></h1>
       <p class="intro-subtitle">Transcribe your speech in real-time or upload audio/video files</p>
     </div>
   </div>
 
-  <div class="transcription-card glass-surface-strong">
-    <section class="controls-section">
-      <div class="section-header">
-        <mat-icon class="section-icon">settings_voice</mat-icon>
-        <h2>Transcription Settings</h2>
+  <div class="transcription-layout">
+    <!-- Settings Panel -->
+    <div class="settings-panel glass-surface-medium">
+      <!-- Language -->
+      <div class="settings-header">
+        <div class="settings-icon" aria-hidden="true">
+          <mat-icon>settings_voice</mat-icon>
+        </div>
+        <div>
+          <h2>Settings</h2>
+          <p>Configure transcription options</p>
+        </div>
       </div>
 
       <mat-form-field appearance="outline" class="language-select">
         <mat-label>Language</mat-label>
-        <mat-select [ngModel]="languageCode()" (ngModelChange)="languageCode.set($event)">
+        <mat-select
+          [ngModel]="languageCode()"
+          (ngModelChange)="languageCode.set($event)"
+          aria-label="Language">
           @for (option of languages(); track option.code) {
             <mat-option [value]="option.code">{{ option.name }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
-      <div class="button-group">
-        @if (isSupported()) {
+      <!-- Mic Section -->
+      @if (isSupported()) {
+        <div class="mic-center">
           @if (!isListening()) {
-            <button
-              mat-raised-button
-              color="primary"
-              class="action-button primary-action"
-              (click)="start()">
-              <mat-icon>radio_button_checked</mat-icon>
-              <span>Start Live Transcription</span>
+            <button class="live-mic-button" (click)="start()" aria-label="Start live transcription">
+              <div class="live-mic-ring ring-1"></div>
+              <div class="live-mic-ring ring-2"></div>
+              <div class="live-mic-face">
+                <mat-icon>mic</mat-icon>
+              </div>
             </button>
+            <p class="mic-caption">Tap to start listening</p>
           } @else {
-            <button
-              mat-raised-button
-              color="warn"
-              class="action-button listening-active"
-              (click)="stop()">
-              <span class="listening-pulse"></span>
-              <mat-icon>stop_circle</mat-icon>
-              <span>Stop</span>
+            <button class="live-mic-button active" (click)="stop()" aria-label="Stop transcription">
+              <div class="live-mic-ring ring-1 active"></div>
+              <div class="live-mic-ring ring-2 active"></div>
+              <div class="live-mic-face active">
+                <mat-icon>stop</mat-icon>
+              </div>
             </button>
-            <div class="listening-indicator">
-              <div class="listening-wave"></div>
-              <span>Listening...</span>
+
+            <!-- Live Waveform -->
+            <div class="live-waveform" aria-label="Listening" aria-live="polite">
+              @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                <div class="live-wave-bar" [style.--i]="i"></div>
+              }
             </div>
+            <p class="mic-caption listening">
+              <span class="live-dot"></span>
+              Listening...
+            </p>
           }
-        } @else {
-          <div class="alert alert-warning">
-            <mat-icon>info_outline</mat-icon>
-            <span>Browser speech recognition not supported. Please use file upload instead.</span>
-          </div>
-        }
+        </div>
+      } @else {
+        <div class="alert alert-warning">
+          <mat-icon>info_outline</mat-icon>
+          <span>Browser speech recognition not supported. Please use file upload instead.</span>
+        </div>
+      }
 
-        <div class="soft-divider"></div>
+      <!-- Divider -->
+      <div class="or-divider">
+        <div class="or-line"></div>
+        <span>or</span>
+        <div class="or-line"></div>
+      </div>
 
+      <!-- Upload Button -->
+      <div class="upload-area">
         <button
           mat-stroked-button
-          class="upload-button"
+          class="upload-btn"
           (click)="fileInput.click()"
           [disabled]="isListening() || isTranscribing()">
           <mat-icon>upload_file</mat-icon>
           <span>Upload Audio/Video</span>
         </button>
+        <p class="upload-hint">MP3, WAV, MP4, OGG...</p>
         <input #fileInput type="file" accept="audio/*,video/*" (change)="onFileSelected($event)" hidden />
       </div>
-    </section>
+    </div>
 
-    @if (isTranscribing()) {
-      <div class="transcribing-state">
-        <div class="transcribing-content">
-          <div class="transcribing-spinner"></div>
-          <p class="transcribing-text">Transcribing your file...</p>
-          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <!-- Transcript Panel -->
+    <div class="transcript-panel glass-surface-medium">
+      <div class="transcript-panel-header">
+        <div class="transcript-title-row">
+          <div class="transcript-panel-icon" aria-hidden="true">
+            <mat-icon>article</mat-icon>
+          </div>
+          <div>
+            <h2>Transcript</h2>
+            @if (segments().length) {
+              <p>{{ segments().length }} segment{{ segments().length !== 1 ? 's' : '' }}</p>
+            } @else {
+              <p>Ready to capture speech</p>
+            }
+          </div>
         </div>
-      </div>
-    }
 
-    @if (errorMessage()) {
-      <div class="alert alert-error">
-        <mat-icon>error_outline</mat-icon>
-        <span>{{ errorMessage() }}</span>
-      </div>
-    }
-
-    <div class="divider"></div>
-
-    <section class="transcript-section">
-      <div class="section-header">
-        <mat-icon class="section-icon">article</mat-icon>
-        <h2>Transcript</h2>
         <div class="transcript-actions">
           <button
-            matIconButton
-            class="icon-btn"
+            mat-icon-button
+            class="action-icon-btn"
             (click)="copy()"
             [disabled]="!fullTranscript()"
-            matTooltip="Copy transcript">
+            matTooltip="Copy all text">
             <mat-icon>content_copy</mat-icon>
           </button>
           <button
             mat-icon-button
-            class="icon-btn"
+            class="action-icon-btn"
             (click)="speak(fullTranscript())"
             [disabled]="!fullTranscript()"
-            matTooltip="Listen to transcript">
+            matTooltip="Read aloud">
             <mat-icon>volume_up</mat-icon>
           </button>
           <button
-            matIconButton
-            class="icon-btn"
+            mat-icon-button
+            class="action-icon-btn delete-btn"
             (click)="clear()"
             [disabled]="segments().length === 0 && !interim()"
             matTooltip="Clear transcript">
@@ -125,36 +144,68 @@
         </div>
       </div>
 
-      <div class="transcript-display glass-surface">
+      <!-- Transcribing Loader -->
+      @if (isTranscribing()) {
+        <div class="transcribing-state">
+          <div class="transcribing-spinner">
+            <div class="spinner-ring"></div>
+            <mat-icon class="spinner-icon">audio_file</mat-icon>
+          </div>
+          <p class="transcribing-label">Transcribing file...</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="alert alert-error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Transcript Display -->
+      <div class="transcript-display">
         @if (segments().length === 0 && !interim()) {
+          <!-- Empty State -->
           <div class="empty-state">
-            <mat-icon>mic_none</mat-icon>
-            <p>Your transcript will appear here</p>
-            <span>Start speaking or upload a file to begin</span>
+            <div class="empty-state-icon">
+              @if (isListening()) {
+                <div class="empty-listening">
+                  @for (i of [1,2,3]; track i) {
+                    <div class="empty-wave" [style.--i]="i"></div>
+                  }
+                </div>
+              } @else {
+                <mat-icon>mic_none</mat-icon>
+              }
+            </div>
+            <p class="empty-title">
+              {{ isListening() ? 'Listening for speech...' : 'Ready to capture your words' }}
+            </p>
+            <span class="empty-sub">
+              {{ isListening() ? 'Speak into your microphone' : 'Start speaking or upload a file to begin' }}
+            </span>
           </div>
         } @else {
-          <div class="transcript-container">
+          <div class="transcript-timeline" aria-live="polite" aria-label="Transcription results">
             @for (s of segments(); track s.at) {
-              <div class="transcript-item" (click)="speak(s.text)">
-                <div class="transcript-meta">
-                  <span class="transcript-timestamp">{{ formatMs(s.at) }}</span>
-                  <div class="transcript-connector"></div>
-                </div>
-                <p class="transcript-text">{{ s.text }}</p>
+              <div class="timeline-item" (click)="speak(s.text)" role="button" tabindex="0"
+                   [attr.aria-label]="'Play: ' + s.text">
+                <div class="timeline-time">{{ formatMs(s.at) }}</div>
+                <div class="timeline-dot"></div>
+                <p class="timeline-text">{{ s.text }}</p>
               </div>
             }
             @if (interim()) {
-              <div class="transcript-item interim-item">
-                <div class="transcript-meta">
-                  <span class="transcript-timestamp">Live</span>
-                  <div class="transcript-connector"></div>
-                </div>
-                <p class="transcript-text interim">{{ interim() }}</p>
+              <div class="timeline-item interim">
+                <div class="timeline-time live">LIVE</div>
+                <div class="timeline-dot interim-dot"></div>
+                <p class="timeline-text interim-text">{{ interim() }}</p>
               </div>
             }
           </div>
         }
       </div>
-    </section>
+    </div>
   </div>
 </div>
