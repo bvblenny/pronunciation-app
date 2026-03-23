@@ -57,6 +57,32 @@
   flex-shrink: 0;
   margin-top: 3px;
   font-variant-numeric: tabular-nums;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+
+  &.step-done {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 8px var(--accent-glow);
+    animation: stepDone 0.4s var(--transition-spring) both;
+  }
+}
+
+.step-check {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+}
+
+@keyframes stepDone {
+  0% { transform: scale(0.7); opacity: 0.4; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .step-info {
@@ -390,16 +416,30 @@
   font-size: 1.0625rem !important;
   font-weight: 800 !important;
   letter-spacing: -0.01em !important;
-  box-shadow: var(--shadow-md), 0 0 24px var(--accent-glow) !important;
   transition: all var(--transition-base) !important;
 
   &:not([disabled]):hover {
     transform: translateY(-3px) !important;
-    box-shadow: var(--shadow-xl), 0 0 40px var(--accent-glow) !important;
+    box-shadow: var(--shadow-xl), 0 0 48px var(--accent-glow) !important;
   }
 
   &:not([disabled]):active {
     transform: translateY(0) scale(0.98) !important;
+  }
+
+  /* Pulsing glow when the button is ready to use */
+  &.btn-ready {
+    animation: analyzeReady 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes analyzeReady {
+  0%, 100% {
+    box-shadow: var(--shadow-md), 0 0 20px var(--accent-glow) !important;
+  }
+  50% {
+    box-shadow: var(--shadow-lg), 0 0 44px rgba(94, 92, 230, 0.50) !important;
+    transform: translateY(-1px) !important;
   }
 }
 
@@ -498,6 +538,22 @@
   flex-direction: column;
   gap: var(--space-6);
   animation: slideUp 0.6s ease-out;
+
+  /* Staggered reveal for each direct child card */
+  > * {
+    animation: cardReveal 0.55s ease-out both;
+  }
+  > *:nth-child(1) { animation-delay: 0.05s; }
+  > *:nth-child(2) { animation-delay: 0.12s; }
+  > *:nth-child(3) { animation-delay: 0.19s; }
+  > *:nth-child(4) { animation-delay: 0.26s; }
+  > *:nth-child(5) { animation-delay: 0.33s; }
+  > *:nth-child(6) { animation-delay: 0.40s; }
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Score Hero Card */
@@ -778,6 +834,73 @@
   border-left: 4px solid var(--accent-primary);
   margin: 0;
   font-style: normal;
+}
+
+/* Word Summary Strip */
+.word-summary-strip {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.word-stat {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--glass-border);
+  background: var(--bg-secondary);
+  transition: all var(--transition-base);
+  animation: slideUp 0.5s ease-out both;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &--total {
+    border-color: rgba(99, 102, 241, 0.25);
+    background: var(--accent-light);
+  }
+  &--perfect {
+    border-color: rgba(16, 185, 129, 0.25);
+    background: var(--success-bg);
+    animation-delay: 0.05s;
+  }
+  &--warning {
+    border-color: rgba(245, 158, 11, 0.25);
+    background: var(--warning-bg);
+    animation-delay: 0.1s;
+  }
+  &--error {
+    border-color: rgba(239, 68, 68, 0.25);
+    background: var(--error-bg);
+    animation-delay: 0.15s;
+  }
+}
+
+.word-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  .word-stat--total & { color: var(--accent-primary); }
+  .word-stat--perfect & { color: var(--success); }
+  .word-stat--warning & { color: var(--warning); }
+  .word-stat--error & { color: var(--error); }
+}
+
+.word-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
 }
 
 /* Word Analysis Grid */

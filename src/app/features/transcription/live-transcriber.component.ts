@@ -42,6 +42,7 @@ export class LiveTranscriberComponent implements OnDestroy {
   segments = signal<TranscriptSegment[]>([]);
   errorMessage = signal<string | null>(null);
   isTranscribing = signal<boolean>(false);
+  copySuccess = signal<boolean>(false);
   languages = this.svc.getLanguagesSignal();
   private recognition: any | null = null;
   private startedAt = 0;
@@ -134,7 +135,10 @@ export class LiveTranscriberComponent implements OnDestroy {
   }
 
   copy() {
-    navigator.clipboard?.writeText(this.fullTranscript());
+    navigator.clipboard?.writeText(this.fullTranscript()).then(() => {
+      this.copySuccess.set(true);
+      setTimeout(() => this.copySuccess.set(false), 2200);
+    });
   }
 
   formatMs(ms: number | string): string {

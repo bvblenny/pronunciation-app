@@ -120,10 +120,11 @@
           <button
             mat-icon-button
             class="action-icon-btn"
+            [class.copy-success]="copySuccess()"
             (click)="copy()"
             [disabled]="!fullTranscript()"
             matTooltip="Copy all text">
-            <mat-icon>content_copy</mat-icon>
+            <mat-icon>{{ copySuccess() ? 'check' : 'content_copy' }}</mat-icon>
           </button>
           <button
             mat-icon-button
@@ -142,6 +143,14 @@
             <mat-icon>delete_outline</mat-icon>
           </button>
         </div>
+
+        <!-- Copy success toast -->
+        @if (copySuccess()) {
+          <div class="copy-toast" role="status" aria-live="polite">
+            <mat-icon>check_circle</mat-icon>
+            Copied to clipboard!
+          </div>
+        }
       </div>
 
       <!-- Transcribing Loader -->

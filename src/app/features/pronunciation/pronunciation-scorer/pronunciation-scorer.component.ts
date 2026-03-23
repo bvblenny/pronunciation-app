@@ -1,4 +1,4 @@
-import { Component, signal, OnDestroy, inject } from '@angular/core';
+import { Component, signal, OnDestroy, inject, effect, viewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -54,6 +54,19 @@ export class PronunciationScorerComponent implements OnDestroy {
   audioChunks: Blob[] = [];
 
   languageOptions = this.pronunciationService.getLanguagesSignal();
+
+  private readonly resultsRef = viewChild<ElementRef>('resultsSection');
+
+  constructor() {
+    // Auto-scroll to results when they first appear
+    effect(() => {
+      if (this.detailedAnalysis()) {
+        setTimeout(() => {
+          this.resultsRef()?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
+    });
+  }
 
   ngOnDestroy(): void {
     if (this.mediaRecorder) {
@@ -226,8 +239,7 @@ export class PronunciationScorerComponent implements OnDestroy {
     }
   }
 
-  resetForm() {
-    this.referenceText.set('');
+  resetForm() {    this.referenceText.set('');
     this.audioBlob.set(null);
     const prevUrl = this.audioUrl();
     if (prevUrl) {
@@ -238,5 +250,20 @@ export class PronunciationScorerComponent implements OnDestroy {
     }
     this.audioUrl.set(null);
     this.store.reset();
+  }
+
+  countPerfectWords(): number {
+    return this.detailedAnalysis()?.words
+      .filter(w => w.errorType === 'MATCH' && (w.evaluation ?? 1) >= 0.95).length ?? 0;
+  }
+
+  countWarningWords(): number {
+    return this.detailedAnalysis()?.words
+      .filter(w => w.errorType === 'MATCH' && (w.evaluation ?? 1) >= 0.8 && (w.evaluation ?? 1) < 0.95).length ?? 0;
+  }
+
+  countErrorWords(): number {
+    return this.detailedAnalysis()?.words
+      .filter(w => w.errorType !== 'MATCH' || (w.evaluation ?? 1) < 0.8).length ?? 0;
   }
 }

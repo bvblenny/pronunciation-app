@@ -17,7 +17,13 @@
     <!-- Step 1: Reference Text -->
     <section class="step-section">
       <div class="step-label">
-        <span class="step-number">01</span>
+        <span class="step-number" [class.step-done]="referenceText() && languageCode()">
+          @if (referenceText() && languageCode()) {
+            <mat-icon class="step-check">check</mat-icon>
+          } @else {
+            01
+          }
+        </span>
         <div class="step-info">
           <h2>Reference Text</h2>
           <p>Enter the text you'll be reading aloud</p>
@@ -63,7 +69,13 @@
     <!-- Step 2: Record -->
     <section class="step-section">
       <div class="step-label">
-        <span class="step-number">02</span>
+        <span class="step-number" [class.step-done]="audioBlob()">
+          @if (audioBlob()) {
+            <mat-icon class="step-check">check</mat-icon>
+          } @else {
+            02
+          }
+        </span>
         <div class="step-info">
           <h2>Record Your Speech</h2>
           <p>Use your microphone or upload an audio file</p>
@@ -171,7 +183,13 @@
     <!-- Step 3: Analyze -->
     <section class="step-section analyze-section">
       <div class="step-label">
-        <span class="step-number">03</span>
+        <span class="step-number" [class.step-done]="detailedAnalysis()">
+          @if (detailedAnalysis()) {
+            <mat-icon class="step-check">check</mat-icon>
+          } @else {
+            03
+          }
+        </span>
         <div class="step-info">
           <h2>Analyze</h2>
           <p>Get your AI-powered pronunciation score</p>
@@ -183,6 +201,7 @@
           mat-raised-button
           color="primary"
           class="analyze-button"
+          [class.btn-ready]="audioBlob() && referenceText() && !isLoading() && !isRecording()"
           (click)="submitForScoring()"
           [disabled]="isLoading() || !audioBlob() || !referenceText() || isRecording()">
           <mat-icon>auto_awesome</mat-icon>
@@ -215,7 +234,7 @@
 
   <!-- Results Section -->
   @if (detailedAnalysis()) {
-    <div class="results-container">
+    <div class="results-container" #resultsSection>
 
       <!-- Score Hero Card -->
       <div class="score-hero-card glass-surface-strong">
@@ -319,6 +338,26 @@
           <div>
             <h3>Word-by-Word Analysis</h3>
             <p>Tap a word to see phoneme details</p>
+          </div>
+        </div>
+
+        <!-- Word summary strip -->
+        <div class="word-summary-strip">
+          <div class="word-stat word-stat--total">
+            <span class="word-stat-value">{{ detailedAnalysis()!.words.length }}</span>
+            <span class="word-stat-label">Total Words</span>
+          </div>
+          <div class="word-stat word-stat--perfect">
+            <span class="word-stat-value">{{ countPerfectWords() }}</span>
+            <span class="word-stat-label">Perfect</span>
+          </div>
+          <div class="word-stat word-stat--warning">
+            <span class="word-stat-value">{{ countWarningWords() }}</span>
+            <span class="word-stat-label">Needs Work</span>
+          </div>
+          <div class="word-stat word-stat--error">
+            <span class="word-stat-value">{{ countErrorWords() }}</span>
+            <span class="word-stat-label">Errors</span>
           </div>
         </div>
 
