@@ -85,7 +85,7 @@ $light-theme: mat.m2-define-light-theme((
   --radius-md:  18px;
   --radius-lg:  24px;
   --radius-xl:  32px;
-  --radius-full:9999px;
+  --radius-full: 9999px;
 
   /* ─── Spacing ─── */
   --space-1:  4px;
@@ -95,11 +95,11 @@ $light-theme: mat.m2-define-light-theme((
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
-  --space-10:40px;
-  --space-12:48px;
-  --space-16:64px;
-  --space-20:80px;
-  --space-24:96px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
 
   /* ─── Motion ─── */
   --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -120,7 +120,7 @@ $light-theme: mat.m2-define-light-theme((
   --font-weight-medium:   500;
   --font-weight-semibold: 600;
   --font-weight-bold:     700;
-  --font-weight-extrabold:800;
+  --font-weight-extrabold: 800;
   --line-height-tight:   1.2;
   --line-height-snug:    1.4;
   --line-height-normal:  1.6;

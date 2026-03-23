@@ -239,7 +239,8 @@ export class PronunciationScorerComponent implements OnDestroy {
     }
   }
 
-  resetForm() {    this.referenceText.set('');
+  resetForm() {
+    this.referenceText.set('');
     this.audioBlob.set(null);
     const prevUrl = this.audioUrl();
     if (prevUrl) {
