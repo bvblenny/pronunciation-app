@@ -8,9 +8,34 @@
   animation: fadeIn 0.6s ease-out;
 }
 
+.experience-layout {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.stage-panel,
+.results-panel {
+  min-width: 0;
+}
+
+.stage-panel-header {
+  margin-bottom: var(--space-6);
+
+  h2 {
+    font-size: 1.25rem;
+    margin: 0 0 var(--space-1);
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+  }
+}
+
 .analysis-card {
   padding: var(--space-5);
-  margin-bottom: var(--space-8);
   animation: fadeIn 0.8s ease-out 0.5s both;
 }
 
@@ -225,6 +250,38 @@
   flex-direction: column;
   gap: var(--space-8);
   animation: fadeIn 0.6s ease-out;
+}
+
+.results-toolbar {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.results-jump-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.results-jump-link:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  background: var(--accent-light);
 }
 
 /* Score Card */
@@ -567,20 +624,30 @@
    Responsive Design
    ======================================== */
 @media (min-width: 640px) {
+  .experience-layout { gap: var(--space-8); }
   .analysis-card { padding: var(--space-6); }
   .word-grid-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 769px) {
+  .experience-layout { grid-template-columns: 1fr 1fr; align-items: start; }
+  .results-toolbar { position: sticky; top: calc(var(--space-4) + 76px); z-index: 10; }
   .analysis-card { padding: var(--space-10); }
+  .stage-panel .analysis-card { position: sticky; top: calc(var(--space-4) + 76px); }
+  .recording-controls { flex-direction: row; align-items: center; justify-content: center; }
+  .soft-divider { width: 1px; max-width: 1px; height: 36px; margin: 0; background: var(--glass-border); }
   .record-button { width: auto; min-width: 240px; }
-  .action-buttons { flex-direction: row; }
+  .upload-button { height: 56px; }
+  .action-buttons { flex-direction: row; justify-content: stretch; }
+  .action-buttons > * { flex: 1; }
   .analyze-button { width: auto; min-width: 220px; }
   .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
   .word-grid-compact { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
 
 @media (min-width: 1024px) {
+  .pronunciation-scorer { max-width: 1320px; }
+  .experience-layout { grid-template-columns: minmax(360px, 0.9fr) minmax(540px, 1.1fr); }
   .score-circle { width: 200px; height: 200px; }
   .score-circle-inner { width: 170px; height: 170px; }
   .score-value { font-size: 3.5rem; }
