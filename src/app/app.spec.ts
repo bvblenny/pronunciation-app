@@ -23,4 +23,11 @@ describe('App', () => {
     expect(compiled.querySelector('.brand-title')?.textContent)
       .toContain('Pronunciation AI');
   });
+
+  it('should render both main navigation links', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const navLinks = fixture.nativeElement.querySelectorAll('.header-nav .nav-link');
+    expect(navLinks.length).toBe(2);
+  });
 });

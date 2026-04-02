@@ -23,10 +23,11 @@ $light-theme: mat.m2-define-light-theme((
    ======================================== */
 
 :root {
-  /* Colors - Light Mode */
-  --bg-primary: #fafafa;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f5f5f7;
+  color-scheme: dark;
+  /* Colors - Dark preferred */
+  --bg-primary: #000000;
+  --bg-secondary: #1c1c1e;
+  --bg-tertiary: #2c2c2e;
 
   /* Premium Gradients */
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -38,39 +39,39 @@ $light-theme: mat.m2-define-light-theme((
                     radial-gradient(at 0% 100%, rgba(240, 147, 251, 0.08) 0px, transparent 50%);
 
   /* Text Colors */
-  --text-primary: #1a1a1a;
-  --text-secondary: #6e6e73;
-  --text-tertiary: #86868b;
+  --text-primary: #ffffff;
+  --text-secondary: #acacac;
+  --text-tertiary: #8a8a8e;
   --text-inverse: #ffffff;
 
   /* Accent Colors */
   --accent-primary: #5e5ce6;
   --accent-hover: #4a4acf;
-  --accent-light: #f0f0ff;
+  --accent-light: rgba(94, 92, 230, 0.15);
   --accent-glow: rgba(94, 92, 230, 0.3);
 
   /* Semantic Colors */
   --success: #34c759;
-  --success-bg: #e8f9ed;
+  --success-bg: rgba(52, 199, 89, 0.15);
   --warning: #ff9500;
-  --warning-bg: #fff5e6;
+  --warning-bg: rgba(255, 149, 0, 0.15);
   --error: #ff3b30;
-  --error-bg: #ffebea;
+  --error-bg: rgba(255, 59, 48, 0.15);
   --info: #007aff;
-  --info-bg: #e6f2ff;
+  --info-bg: rgba(0, 122, 255, 0.15);
 
   /* Glass Effects */
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-bg-strong: rgba(255, 255, 255, 0.95);
-  --glass-border: rgba(0, 0, 0, 0.12);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --glass-bg: rgba(28, 28, 30, 0.85);
+  --glass-bg-strong: rgba(28, 28, 30, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 
   /* Elevation Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
 
   /* Border Radius */
   --radius-xs: 8px;
@@ -127,33 +128,34 @@ $light-theme: mat.m2-define-light-theme((
   --container-padding: var(--space-6);
 }
 
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
+/* Light Mode override */
+@media (prefers-color-scheme: light) {
   :root {
-    --bg-primary: #000000;
-    --bg-secondary: #1c1c1e;
-    --bg-tertiary: #2c2c2e;
+    color-scheme: light;
+    --bg-primary: #fafafa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f5f5f7;
 
-    --text-primary: #ffffff;
-    --text-secondary: #acacac;
-    --text-tertiary: #8a8a8e;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #86868b;
 
-    --glass-bg: rgba(28, 28, 30, 0.85);
-    --glass-bg-strong: rgba(28, 28, 30, 0.95);
-    --glass-border: rgba(255, 255, 255, 0.15);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-bg-strong: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(0, 0, 0, 0.12);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
 
-    --accent-light: rgba(94, 92, 230, 0.15);
-    --success-bg: rgba(52, 199, 89, 0.15);
-    --warning-bg: rgba(255, 149, 0, 0.15);
-    --error-bg: rgba(255, 59, 48, 0.15);
-    --info-bg: rgba(0, 122, 255, 0.15);
+    --accent-light: #f0f0ff;
+    --success-bg: #e8f9ed;
+    --warning-bg: #fff5e6;
+    --error-bg: #ffebea;
+    --info-bg: #e6f2ff;
   }
 }
 

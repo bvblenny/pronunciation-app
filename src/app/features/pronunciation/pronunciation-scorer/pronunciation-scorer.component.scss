@@ -3,13 +3,13 @@
    ======================================== */
 
 .pronunciation-scorer {
-  max-width: 1000px;
+  max-width: 960px;
   margin: 0 auto;
   animation: fadeIn 0.6s ease-out;
 }
 
 .analysis-card {
-  padding: var(--space-10);
+  padding: var(--space-5);
   margin-bottom: var(--space-8);
   animation: fadeIn 0.8s ease-out 0.5s both;
 }
@@ -86,7 +86,8 @@
 }
 
 .record-button {
-  min-width: 240px;
+  width: 100%;
+  min-width: 0;
   height: 56px;
   font-size: 1.0625rem;
   box-shadow: var(--shadow-lg) !important;
@@ -157,11 +158,13 @@
   display: flex;
   gap: var(--space-4);
   justify-content: center;
+  flex-direction: column;
   margin-top: var(--space-8);
 }
 
 .analyze-button {
-  min-width: 220px;
+  width: 100%;
+  min-width: 0;
   height: 56px;
   font-size: 1.0625rem;
   box-shadow: var(--shadow-lg), 0 0 30px var(--accent-glow) !important;
@@ -186,10 +189,11 @@
 
 .loading-content {
   background: var(--glass-bg-strong);
-  padding: var(--space-10);
+  padding: var(--space-6);
   border-radius: var(--radius-xl);
   text-align: center;
-  min-width: 320px;
+  width: calc(100% - var(--space-8));
+  max-width: 420px;
   box-shadow: var(--shadow-xl);
   animation: fadeIn 0.4s ease-out;
 }
@@ -245,8 +249,8 @@
 }
 
 .score-circle {
-  width: 200px;
-  height: 200px;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -262,8 +266,8 @@
 }
 
 .score-circle-inner {
-  width: 170px;
-  height: 170px;
+  width: 135px;
+  height: 135px;
   border-radius: 50%;
   background: var(--bg-secondary);
   display: flex;
@@ -274,7 +278,7 @@
 }
 
 .score-value {
-  font-size: 3.5rem;
+  font-size: 2.5rem;
   font-weight: 700;
   background: var(--gradient-primary);
   -webkit-background-clip: text;
@@ -303,7 +307,7 @@
 /* Metrics Grid */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-5);
   animation: fadeIn 0.6s ease-out 0.2s both;
 }
@@ -369,8 +373,8 @@
 
 .pause-item {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  align-items: flex-start;
+  gap: var(--space-3);
   padding: var(--space-4);
   background: var(--bg-secondary);
   border: 2px solid var(--glass-border);
@@ -400,7 +404,7 @@
 
 .pause-item:hover::before { transform: scaleY(1); }
 
-.pause-timeline { display: flex; align-items: center; gap: var(--space-2); min-width: 160px; flex-shrink: 0; }
+.pause-timeline { display: flex; align-items: center; gap: var(--space-2); min-width: auto; flex-shrink: 0; }
 
 .pause-time {
   font-size: 0.8125rem;
@@ -473,7 +477,7 @@
 .word-analysis-card { padding: var(--space-8); animation: fadeIn 0.6s ease-out 0.4s both; }
 
 /* Compact Word Grid */
-.word-grid-compact { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+.word-grid-compact { display: grid; grid-template-columns: 1fr; gap: var(--space-3); }
 
 .word-item {
   padding: var(--space-4);
@@ -562,20 +566,26 @@
 /* ========================================
    Responsive Design
    ======================================== */
-@media (max-width: 768px) {
+@media (min-width: 640px) {
   .analysis-card { padding: var(--space-6); }
-  /* intro-title size handled globally */
-  .recording-controls { width: 100%; }
-  .record-button { width: 100%; min-width: auto; }
-  .action-buttons { flex-direction: column; }
-  .analyze-button { width: 100%; }
-  .score-circle { width: 160px; height: 160px; }
-  .score-circle-inner { width: 135px; height: 135px; }
-  .score-value { font-size: 2.5rem; }
-  .metrics-grid { grid-template-columns: 1fr; }
-  .word-grid { grid-template-columns: 1fr; }
-  .pause-item { flex-direction: column; gap: var(--space-3); }
-  .pause-timeline { min-width: auto; }
+  .word-grid-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 769px) {
+  .analysis-card { padding: var(--space-10); }
+  .record-button { width: auto; min-width: 240px; }
+  .action-buttons { flex-direction: row; }
+  .analyze-button { width: auto; min-width: 220px; }
+  .metrics-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .word-grid-compact { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .score-circle { width: 200px; height: 200px; }
+  .score-circle-inner { width: 170px; height: 170px; }
+  .score-value { font-size: 3.5rem; }
+  .pause-item { flex-direction: row; gap: var(--space-4); }
+  .pause-timeline { min-width: 160px; }
 }
 
 @media (max-width: 480px) {
