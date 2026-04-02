@@ -156,13 +156,13 @@
       }
 
       @if (detailedAnalysis()) {
-        <div class="results-toolbar glass-surface">
-          <a class="results-jump-link" href="#overall-score">Overall</a>
-          <a class="results-jump-link" href="#performance-metrics">Metrics</a>
-          <a class="results-jump-link" href="#transcript">Transcript</a>
-          <a class="results-jump-link" href="#word-analysis">Words</a>
+        <div class="results-toolbar glass-surface" role="navigation" aria-label="Results sections">
+          <a class="results-jump-link" href="#overall-score" aria-label="Go to overall score section">Overall</a>
+          <a class="results-jump-link" href="#performance-metrics" aria-label="Go to metrics section">Metrics</a>
+          <a class="results-jump-link" href="#transcript" aria-label="Go to transcript section">Transcript</a>
+          <a class="results-jump-link" href="#word-analysis" aria-label="Go to word analysis section">Words</a>
           @if (detailedAnalysis()!.pauses.length) {
-            <a class="results-jump-link" href="#pauses-analysis">Pauses</a>
+            <a class="results-jump-link" href="#pauses-analysis" aria-label="Go to pauses section">Pauses</a>
           }
         </div>
       }
