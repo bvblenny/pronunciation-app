@@ -373,7 +373,7 @@
 
 .pause-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-3);
   padding: var(--space-4);
   background: var(--bg-secondary);
@@ -586,12 +586,6 @@
   .score-value { font-size: 3.5rem; }
   .pause-item { flex-direction: row; gap: var(--space-4); }
   .pause-timeline { min-width: 160px; }
-}
-
-@media (max-width: 480px) {
-  /* intro-badge size handled globally */
-  .section-header h2 { font-size: 1.25rem; }
-  .card-title { font-size: 1.25rem; }
 }
 
 /* --- Compact Word Cards + Micro-interactions --- */
