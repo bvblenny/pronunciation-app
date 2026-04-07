@@ -27,6 +27,16 @@
           <mat-icon>transcribe</mat-icon>
           <span>Transcribe</span>
         </a>
+
+        @if (healthService.backendAvailable() === false) {
+          <div class="backend-status backend-status--offline"
+               role="status"
+               aria-live="polite"
+               title="Backend service is unavailable. Some features may not work.">
+            <span class="backend-status__dot"></span>
+            <span class="backend-status__label">Service offline</span>
+          </div>
+        }
       </nav>
     </div>
   </header>
