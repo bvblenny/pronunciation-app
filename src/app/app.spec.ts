@@ -1,13 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { App } from './app';
 
 describe('App', () => {
+  let httpMock: HttpTestingController;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [App, HttpClientTestingModule],
       providers: [provideRouter([])]
     }).compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    // Flush any pending health check requests made by the component
+    httpMock.match('/api/health').forEach(req => req.flush({ status: 'ok' }));
+    httpMock.verify();
   });
 
   it('should create the app', () => {
