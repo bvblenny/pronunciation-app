@@ -1,4 +1,4 @@
-# AGENTS.md - Pronunciation App Context Guide
+# Pronunciation App Context Guide
 
 ## Project Overview
 
@@ -146,6 +146,17 @@ Component renders transcript + segment buttons for time-based navigation
 
 ## Development Workflow
 
+### Feature Implementation Order — Backend First
+
+**Always implement backend before frontend.** The frontend depends entirely on real API contracts (response shapes, error codes, field names). Building frontend against assumed contracts almost always causes rework when the real backend differs.
+
+Recommended order for any new feature:
+1. Define the API contract (endpoint, request/response shape, error codes)
+2. Implement and test the backend endpoint
+3. Implement the Angular frontend against the real API
+
+**If backend is not yet available** (e.g. blocked or in progress), use Angular mock services to stub the contract explicitly — never hardcode assumptions in the real service files. Create a `*.mock.service.ts` alongside the real service and swap it via Angular's DI in `app.config.ts` during development. Remove the mock once the real backend is ready.
+
 ### Setup
 ```bash
 # 1. Start backend (pronunciation-service on port 8080)
@@ -201,25 +212,17 @@ npm build
 
 ---
 
-## Recommended Improvements & Roadmap
+## Roadmap
 
-### Short-Term Enhancements
-- Batch analysis (upload multiple files for comparison)
-- Result export (PDF, JSON)
-- Pronunciation history/progress tracking
-- Comparison view (user pronunciation vs. native speaker)
-
-### Medium-Term Features
+### Priority Features
 - Real-time feedback during recording
 - Phoneme-level visualization
 - Stress/intonation analysis
 - Spaced repetition scheduling
 
-### Long-Term Considerations
-- Offline mode (cache transcription models)
-- Mobile app (React Native or Flutter)
-- Multiplayer/social features (compare with friends)
-- Integration with language learning platforms (LMS)
+### Low Priority
+- Batch analysis, result export, history tracking, comparison view
+- Offline mode, mobile app, social features, LMS integration
 
 ---
 
@@ -227,13 +230,14 @@ npm build
 
 When working with this project:
 
-1. **Always verify API contracts** before implementation (see README.md)
-2. **Maintain backward compatibility** with existing result models
-3. **Update error handling** if new error codes are introduced
-4. **Test with multiple file formats** and sizes
-5. **Consider accessibility** (WCAG 2.1 AA) in UI changes
-6. **Use Angular Material** for consistent styling and components
-7. **Document new services** with JSDoc comments and usage examples
-8. **Mock backend responses** in tests using `HttpTestingController`
-9. **Handle network failures gracefully** (retry logic, offline detection)
-10. **Keep UI responsive** (debounce user input, show loading states)
+1. **Backend first.** Never implement frontend for an endpoint that doesn't exist yet. If the backend is missing, create a mock service (`*.mock.service.ts`) and make the contract explicit — do not assume shapes.
+2. **Always verify API contracts** before implementation (see README.md)
+3. **Maintain backward compatibility** with existing result models
+4. **Update error handling** if new error codes are introduced
+5. **Test with multiple file formats** and sizes
+6. **Consider accessibility** (WCAG 2.1 AA) in UI changes
+7. **Use Angular Material** for consistent styling and components
+8. **Document new services** with JSDoc comments and usage examples
+9. **Mock backend responses** in tests using `HttpTestingController`
+10. **Handle network failures gracefully** (retry logic, offline detection)
+11. **Keep UI responsive** (debounce user input, show loading states)
