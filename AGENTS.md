@@ -1,243 +1,153 @@
-# Pronunciation App Context Guide
+# Project Overview
+Pronunciation App is an Angular 20 frontend for language learners to upload or record speech, send
+it to a backend pronunciation service, and receive detailed feedback (WER, word/phoneme analysis,
+prosody) plus file and live transcription flows in a Material-based UI.
 
-## Project Overview
+## Repository Structure
+- `/` — Angular app root with workspace config, scripts, and primary docs.
+  - `.vscode/` — VS Code launch/tasks and recommended extensions.
+  - `public/` — static assets copied at build time (for example `favicon.ico`).
+  - `src/` — application source (bootstrap, core services/API/models, feature components).
+- `README.md` — product/API overview and quick-start instructions.
+- `angular.json` — Angular CLI build/serve/test target configuration.
+- `package.json` — npm scripts and dependency manifest.
+- `proxy.conf.json` — local dev proxy mapping `/api` to `http://localhost:8080`.
+- `tsconfig*.json` — strict TypeScript and Angular compiler settings.
+- `AGENTS.md` — repository guidance for AI coding agents.
 
-**Pronunciation App** is an Angular 20 web application that helps users learn and improve their language pronunciation through AI-powered speech analysis and transcription.
-
-**Tech Stack:**
-- Frontend: Angular 20, Angular Material, RxJS, TypeScript, SCSS/HTML
-- Build: Angular CLI with development proxy
-- Testing: Jasmine/Karma
-- Architecture: Component-based Angular with service layer
-
-**Backend Dependency:**
-- Spring Boot microservice (pronunciation-service) running on `http://localhost:8080`
-- API contracts defined in README.md
-
----
-
-## Core Use Cases
-
-### 1. **Pronunciation Analysis & Scoring**
-Users record or upload audio files to receive detailed pronunciation feedback:
-- **Input:** Audio file (mic recording or file upload) + reference text + language code
-- **Output:** Detailed pronunciation analysis including:
-  - Overall pronunciation score (0-100)
-  - Word-Error-Rate (WER) with substitutions, insertions, deletions
-  - Transcript text
-  - Per-word metrics: error type (MATCH/SUBSTITUTION/INSERTION/DELETION), accuracy %, duration, phonemes
-  - Pause detection with timestamps and durations
-- **API:** `POST /api/pronunciation/analyze-detailed`
-
-### 2. **Audio/Video Transcription**
-Users upload or stream audio/video to get transcribed text with temporal segments:
-- **Input:** Audio/video file or browser microphone stream + language code
-- **Output:** Full transcript + optional segment data (text, startMs, endMs)
-- **Methods:**
-  - File upload transcription: `POST /api/transcription/transcribe`
-  - Browser live transcription: Web Speech API (if supported)
-- **API:** `GET /api/transcription/languages` (returns available languages)
-
-### 3. **Transcript Interaction**
-Users interact with transcripts through playback, highlighting, and navigation:
-- Segment-based navigation (click segment → play audio at that timestamp)
-- Text highlighting synchronized with audio playback
-- Language switching
-
----
-
-## Application Architecture
-
-### High-Level Structure
-
-```
-src/
-├── app/
-│   ├── components/           # Reusable UI components
-│   ├── services/             # API clients, audio handling, transcription
-│   ├── models/               # TypeScript interfaces (API DTOs)
-│   ├── app.component.*       # Root component
-│   └── app.config.ts         # App configuration & providers
-├── assets/                   # Static files, icons
-└── environments/             # Environment-specific config
-```
-
-### Key Services
-
-**AudioService:** Audio recording/playback, format handling, audio state management
-**PronunciationService:** API calls to pronunciation analysis endpoint
-**TranscriptionService:** API calls to transcription endpoint, language management
-**WebSpeechService:** Browser Web Speech API integration for live transcription
-
-### Key Components
-
-**Pronunciation Scorer:** Main analysis workflow (upload/record → analyze → display results)
-**Transcriber:** Transcription interface (upload/stream → transcribe → display + segments)
-**Result Display:** Renders pronunciation scores, word-level errors, phoneme data, pauses
-**Transcript Viewer:** Displays segments with timestamps, click-to-play navigation
-
-### Data Models
-
-**DetailedAnalysisDto:** {score, wer, substitutions, insertions, deletions, transcript, words[], pauses[]}
-- words[]: {text, errorType, accuracy, startMs, endMs, phonemes[]}
-- pauses[]: {startMs, endMs, durationMs}
-
-**TranscriptionResult:** {transcript, segments[]}
-- segments[]: {text, startMs, endMs}
-
-**LanguageDto:** {code, name} (e.g., "en-US", "English")
-
----
-
-## Common Development Tasks
-
-### Adding Features
-- **New Analysis Metrics:** Extend `DetailedAnalysisDto` model, update result components
-- **New Languages:** Update backend supported languages, UI language selector
-- **UI Enhancements:** Modify components in `src/app/components/`, use Angular Material for consistency
-- **Audio Format Support:** Update `AudioService` to handle new MIME types
-
-### Bug Fixes & Improvements
-- **Error Handling:** Network errors (400, 413, 500) handled in services with user-facing messages
-- **Performance:** Optimize RxJS subscriptions, lazy load transcript segments
-- **Accessibility:** Ensure keyboard navigation, ARIA labels on Material components
-- **Mobile Responsiveness:** Test on mobile breakpoints, use Angular CDK responsive utilities
-
-### Testing
-- Unit tests: `src/**/*.spec.ts` using Jasmine
-- Run tests: `npm run test`
-- Coverage: Karma reports in `./coverage/`
-
----
-
-## API Integration Patterns
-
-### Pronunciation Analysis Flow
-```
-User Input (Audio File + Reference Text)
-↓
-PronunciationService.analyzeDetailed(file, referenceText, languageCode)
-↓
-POST /api/pronunciation/analyze-detailed?referenceText=...&languageCode=...
-↓
-Backend: Whisper transcription + pronunciation scoring
-↓
-Response: DetailedAnalysisDto
-↓
-Component renders results (score, word-level breakdown, pauses)
-```
-
-### Transcription Flow
-```
-User Input (Audio/Video File or Browser Microphone)
-↓
-TranscriptionService.transcribe(file, languageCode) OR WebSpeechService.startLive()
-↓
-POST /api/transcription/transcribe?languageCode=...
-↓
-Backend: Whisper transcription with segment timestamps
-↓
-Response: {transcript, segments[]}
-↓
-Component renders transcript + segment buttons for time-based navigation
-```
-
----
-
-## Development Workflow
-
-### Feature Implementation Order — Backend First
-
-**Always implement backend before frontend.** The frontend depends entirely on real API contracts (response shapes, error codes, field names). Building frontend against assumed contracts almost always causes rework when the real backend differs.
-
-Recommended order for any new feature:
-1. Define the API contract (endpoint, request/response shape, error codes)
-2. Implement and test the backend endpoint
-3. Implement the Angular frontend against the real API
-
-**If backend is not yet available** (e.g. blocked or in progress), use Angular mock services to stub the contract explicitly — never hardcode assumptions in the real service files. Create a `*.mock.service.ts` alongside the real service and swap it via Angular's DI in `app.config.ts` during development. Remove the mock once the real backend is ready.
-
-### Setup
+## Build & Development Commands
 ```bash
-# 1. Start backend (pronunciation-service on port 8080)
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Dev server with proxy
-npm run start:proxy  # Proxies /api/* requests to http://localhost:8080
+# Run dev server
+npm run start
 
-# 4. Build for production
-npm build
+# Run dev server with backend proxy (/api -> localhost:8080)
+npm run start:proxy
+
+# Run dev server on LAN with SSL cert/key paths from package.json
+npm run start:lan
+
+# Production build
+npm run build
+
+# Development watch build
+npm run watch
+
+# Unit tests (Karma/Jasmine)
+npm run test
 ```
 
-### Proxy Configuration
-- File: `proxy.conf.json`
-- Maps `/api/*` → `http://localhost:8080/api/*`
-- Enables CORS-free development
+```bash
+# Lint
+> TODO: No lint script is defined in package.json.
 
-### Environment Config
-- Development: `src/environments/environment.ts`
-- Production: `src/environments/environment.prod.ts`
-- Update API base URL if backend location changes
+# Explicit type-check
+> TODO: No dedicated type-check script is defined (type-checking occurs during Angular build).
 
----
+# Debug
+# Option 1: run and debug in browser with source maps
+npm run start
+# Option 2: VS Code launch targets "ng serve" / "ng test" from .vscode/launch.json
 
-## Key Constraints & Considerations
+# Deploy
+> TODO: No deploy script or deployment workflow is defined in this repository.
+```
 
-### File Upload Limits
-- Max file size: 413 error from backend if exceeded
-- Supported formats: MP3, WAV, OGG, M4A, WebM (backend-dependent)
+## Code Style & Conventions
+- Use 2-space indentation, UTF-8, final newline, and trimmed trailing whitespace
+  (`/.editorconfig`).
+- Use single quotes in TypeScript (`.editorconfig` `quote_type = single`).
+- Angular components are standalone and colocated as `*.component.ts|html|scss`.
+- Core layers are organized by concern: `core/api`, `core/services`, `core/models`,
+  `core/config`, `core/interceptors`.
+- Prefer typed interfaces for API DTOs in `src/app/core/models/pronunciation.model.ts`.
+- State management in features uses Angular Signals (`signal`, `computed`) and store-style classes.
+- Barrel exports (`index.ts`) are used for stable import surfaces.
+- Commit message template:
+  > TODO: No commit-message convention/template is documented in this repository.
 
-### Language Support
-- Fetch available languages: `GET /api/transcription/languages`
-- Default language: `en-US`
-- Users can select language per request
+## Architecture Notes
+```mermaid
+flowchart TD
+  UI[Standalone Angular Components\n(pronunciation, transcribe, prosody)]
+  Store[PronunciationStore\nSignals state]
+  Service[PronunciationService\nDomain API]
+  Client[PronunciationApiClient\nHttpClient + FormData]
+  Config[ApiConfigService/API_CONFIG]
+  Interceptor[errorInterceptor]
+  Backend[(pronunciation-service\nhttp://localhost:8080)]
+  Health[HealthService\n/api/health polling]
 
-### Browser Compatibility
-- Web Speech API (live transcription): Limited browser support
-  - Chrome/Edge: Full support
-  - Firefox/Safari: Limited/no support
-  - Fallback to file upload on unsupported browsers
+  UI --> Store
+  UI --> Service
+  Store --> Service
+  Service --> Client
+  Client --> Config
+  Client --> Interceptor
+  Client --> Backend
+  Health --> Backend
+  Health --> UI
+```
 
-### Performance Notes
-- Large audio files may take time to process (depends on backend)
-- Show loading states during analysis
-- Consider streaming for very long audio files (future enhancement)
+The app boots from `src/main.ts` into a standalone root component and routes users to
+pronunciation analysis (`/`) or lazy-loaded transcription (`/transcribe`). Feature components call
+`PronunciationService`, which delegates HTTP details to `PronunciationApiClient`; endpoints are
+centralized in `API_CONFIG`, and `errorInterceptor` maps transport/backend errors to user-facing
+messages. Pronunciation analysis state is coordinated through `PronunciationStore`, while
+`HealthService` continuously polls backend availability for UI status signaling.
 
-### Error Scenarios Handled
-- Missing/invalid audio file → 400 error, user message
-- Unsupported media type → 400 error, prompt valid formats
-- File too large → 413 error, suggest compression
-- Backend failure → 500 error, retry/contact support message
+## Testing Strategy
+1. **Unit tests:** Jasmine + Karma via Angular test builder (`ng test` through `npm run test`).
+2. **HTTP-focused service tests:** use `HttpClientTestingModule` and `HttpTestingController`
+   (see `src/app/core/services/*.spec.ts`).
+3. **Component tests:** run via Angular TestBed (for example `src/app/app.spec.ts`).
+4. **Integration tests:**
+   > TODO: No separate integration-test suite is configured.
+5. **E2E tests:**
+   > TODO: No e2e framework/configuration is present.
+6. **CI execution:**
+   > TODO: No CI workflow files are present in this repository snapshot.
 
----
+## Security & Compliance
+- Keep local-only certs and proxy overrides out of version control (`certs/`, `proxy.conf.json`
+  ignored in `.gitignore`).
+- Route backend calls through the local proxy in development to avoid ad-hoc CORS workarounds.
+- Centralize API paths in `API_CONFIG` to reduce endpoint sprawl and review surface.
+- Error handling is centralized in `errorInterceptor` to avoid leaking raw backend details into UI.
+- Dependency scanning / SCA:
+  > TODO: No repository-level dependency scanning workflow is defined here.
+- License:
+  > TODO: No `LICENSE` file is present in this repository snapshot.
 
-## Roadmap
+## Agent Guardrails
+1. Treat backend API contracts in `README.md` as source of truth; do not invent response shapes.
+2. Follow backend-first workflow already documented in repository guidance.
+3. Avoid committing local secrets/certs/proxy overrides (see `.gitignore`).
+4. Prefer minimal, scoped changes in the relevant feature/core module.
+5. Preserve standalone-component structure and existing barrel exports.
+6. Root `AGENTS.md` exists; no nested `AGENTS.md` overrides were found.
+7. Required review boundaries:
+   > TODO: No CODEOWNERS or formal required-review policy is defined in this snapshot.
+8. Rate limits / automation quotas:
+   > TODO: No explicit agent/API rate-limit policy is documented in this repository.
 
-### Priority Features
-- Real-time feedback during recording
-- Phoneme-level visualization
-- Stress/intonation analysis
-- Spaced repetition scheduling
+## Extensibility Hooks
+- `src/app/core/config/api.config.ts`: add/adjust backend endpoints in one place.
+- `ApiConfigService.getEndpoint(category, action)`: extension point for endpoint resolution logic.
+- `src/app/app.routes.ts`: add new routes; supports lazy-loaded feature components.
+- `PronunciationService`: domain façade to add new pronunciation/transcription use cases.
+- `PronunciationStore`: feature state orchestration extension point for combined analyses.
+- Language options are backend-driven via `/api/transcription/languages` with local fallback defaults.
+- Environment variables / feature flags:
+  > TODO: No explicit env-var or feature-flag system is currently defined.
 
-### Low Priority
-- Batch analysis, result export, history tracking, comparison view
-- Offline mode, mobile app, social features, LMS integration
-
----
-
-## Notes for AI Agents
-
-When working with this project:
-
-1. **Backend first.** Never implement frontend for an endpoint that doesn't exist yet. If the backend is missing, create a mock service (`*.mock.service.ts`) and make the contract explicit — do not assume shapes.
-2. **Always verify API contracts** before implementation (see README.md)
-3. **Maintain backward compatibility** with existing result models
-4. **Update error handling** if new error codes are introduced
-5. **Test with multiple file formats** and sizes
-6. **Consider accessibility** (WCAG 2.1 AA) in UI changes
-7. **Use Angular Material** for consistent styling and components
-8. **Document new services** with JSDoc comments and usage examples
-9. **Mock backend responses** in tests using `HttpTestingController`
-10. **Handle network failures gracefully** (retry logic, offline detection)
-11. **Keep UI responsive** (debounce user input, show loading states)
+## Further Reading
+- `./README.md`
+- `./angular.json`
+- `./package.json`
+- `./src/app/app.routes.ts`
+- `./src/app/core/config/api.config.ts`
+- `./src/app/core/api/pronunciation-api.client.ts`
+- `./src/app/features/pronunciation/state/pronunciation.store.ts`
