@@ -13,7 +13,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatChipsModule } from '@angular/material/chips';
-import { PronunciationService, SubtitleService, TranscriptionResponse, SubtitleFormat } from '../../core';
+import { PronunciationService, SubtitleService, TranscriptionResponse, SubtitleFormat, TranscriptionSegment } from '../../core';
 
 interface TranscriptSegment {
   text: string;
@@ -57,6 +57,7 @@ export class LiveTranscriberComponent implements OnDestroy {
   segments = signal<TranscriptSegment[]>([]);
   errorMessage = signal<string | null>(null);
   isTranscribing = signal<boolean>(false);
+  isExportingSubtitles = signal<boolean>(false);
   languages = this.svc.getLanguagesSignal();
   lastTranscription = signal<TranscriptionResponse | null>(null);
 
@@ -78,12 +79,28 @@ export class LiveTranscriberComponent implements OnDestroy {
     return interim ? text + ' ' + interim : text;
   });
 
-  hasSubtitleData = computed(() => {
+  subtitleSegments = computed<TranscriptionSegment[]>(() => {
     const transcription = this.lastTranscription();
-    return transcription !== null &&
-           transcription.segments !== undefined &&
-           transcription.segments.length > 0;
+    if (transcription?.segments?.length) {
+      return transcription.segments;
+    }
+
+    const liveSegments = this.segments()
+      .map((seg, idx, all) => {
+        const startMs = Math.max(0, Number(seg.at) || 0);
+        const nextStart = idx < all.length - 1 ? Math.max(startMs + 1, Number(all[idx + 1].at) || 0) : startMs + 2000;
+        return {
+          text: seg.text,
+          startMs,
+          endMs: nextStart
+        };
+      })
+      .filter(seg => seg.text?.trim().length > 0);
+
+    return liveSegments;
   });
+
+  hasSubtitleData = computed(() => this.subtitleSegments().length > 0);
 
   filteredSegments = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
@@ -156,6 +173,7 @@ export class LiveTranscriberComponent implements OnDestroy {
     this.errorMessage.set(null);
     this.segments.set([]);
     this.interim.set('');
+    this.lastTranscription.set(null);
     this.startedAt = Date.now();
     this.recognition.lang = this.languageCode();
     try {
@@ -175,6 +193,7 @@ export class LiveTranscriberComponent implements OnDestroy {
   clear() {
     this.segments.set([]);
     this.interim.set('');
+    this.lastTranscription.set(null);
   }
 
   speak(text: string) {
@@ -227,11 +246,15 @@ export class LiveTranscriberComponent implements OnDestroy {
   }
 
   downloadSubtitles(format: SubtitleFormat) {
-    const transcription = this.lastTranscription();
-    if (!transcription || !transcription.segments?.length) return;
+    if (this.isExportingSubtitles()) return;
 
+    const subtitleSegments = this.subtitleSegments();
+    if (!subtitleSegments.length) return;
+
+    this.isExportingSubtitles.set(true);
+    this.errorMessage.set(null);
     try {
-      const blob = this.subtitleSvc.generateSubtitles(transcription.segments, format);
+      const blob = this.subtitleSvc.generateSubtitles(subtitleSegments, format);
       const formatInfo = this.subtitleSvc.getFormatInfo(format);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -244,6 +267,8 @@ export class LiveTranscriberComponent implements OnDestroy {
     } catch (err) {
       console.error('Failed to generate subtitles:', err);
       this.errorMessage.set('Failed to generate subtitles. Please try again.');
+    } finally {
+      this.isExportingSubtitles.set(false);
     }
   }
 

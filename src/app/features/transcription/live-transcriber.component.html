@@ -181,9 +181,9 @@
             [matMenuTriggerFor]="subtitleMenu"
             class="icon-btn subtitle-btn"
             [class.has-data]="hasSubtitleData()"
-            [disabled]="!hasSubtitleData()"
-            matTooltip="Download subtitles">
-            <mat-icon>subtitles</mat-icon>
+            [disabled]="!hasSubtitleData() || isExportingSubtitles()"
+            [matTooltip]="isExportingSubtitles() ? 'Generating subtitles...' : 'Download subtitles'">
+            <mat-icon>{{ isExportingSubtitles() ? 'hourglass_empty' : 'subtitles' }}</mat-icon>
           </button>
           <mat-menu #subtitleMenu="matMenu">
             <button mat-menu-item (click)="downloadSubtitles('srt')">
@@ -372,4 +372,3 @@
     </section>
   </div>
 </div>
-
