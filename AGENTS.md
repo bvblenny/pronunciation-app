@@ -98,6 +98,34 @@ centralized in `API_CONFIG`, and `errorInterceptor` maps transport/backend error
 messages. Pronunciation analysis state is coordinated through `PronunciationStore`, while
 `HealthService` continuously polls backend availability for UI status signaling.
 
+## Feature Enhancement Protocol
+When tasked with enhancing an existing feature or building a new one, you are responsible for autonomously identifying and defining the requirements before writing any code. Follow this strict process:
+
+1. **Autonomous Requirement Discovery**:
+   - **Codebase Scanning**: Analyze the relevant standalone components, services, `PronunciationStore` (Signals), and routes to understand the current technical implementation.
+   - **Dependency & State Mapping**: Map out how data flows through `PronunciationService` and `PronunciationApiClient`. Identify any API endpoints in `API_CONFIG` that are affected or need to be added.
+   - **Specification Drafting**: Generate a concise list of functional and non-functional requirements based on your discovery. Explicitly think about edge cases (e.g., audio upload failures, slow backend polling, or missing transcription languages).
+
+2. **User Approval Gate (STOP & ASK)**:
+   - Present your discovered requirements and a brief technical implementation plan to the user *before* writing or modifying any implementation code.
+   - **Do not proceed** to step 3 until the user explicitly approves or modifies your specification.
+
+3. **Implementation Plan**:
+   - Once approved, create a step-by-step checklist of the files you intend to create or modify.
+   - Ensure the plan aligns with the Angular 20 standalone architecture, maintains strict typing, and properly updates the Signal-based reactive state.
+
+4. **Drafting & Coding**:
+   - Write clean, strictly typed TypeScript code (avoid `any`).
+   - Adhere to the project design patterns (Material-based UI, standalone components, 2-space indentation, single quotes).
+   - Keep your changes minimal and scoped tightly to the approved requirements. Do not refactor unrelated files or barrel exports.
+
+5. **Testing & Self-Correction**:
+   - Run the unit tests via `npm run test` (Karma/Jasmine).
+   - If unit tests fail, analyze the error logs, form a hypothesis, and attempt to resolve the issue autonomously before reporting back or asking for help.
+
+6. **Delivery Review**:
+   - Summarize the changes made, map them back to the approved requirements list, and verify that all unit tests pass successfully.
+
 ## Testing Strategy
 1. **Unit tests:** Jasmine + Karma via Angular test builder (`ng test` through `npm run test`).
 2. **HTTP-focused service tests:** use `HttpClientTestingModule` and `HttpTestingController`
