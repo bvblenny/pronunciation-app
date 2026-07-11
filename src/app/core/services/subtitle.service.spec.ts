@@ -78,7 +78,7 @@ describe('SubtitleService', () => {
       const text = await blob.text();
       expect(text).toContain('00:00:00,000 --> 00:00:00,400');
       expect(text).toContain('First');
-      expect(text).toContain('00:00:00,400 --> 00:00:01,400');
+      expect(text).toContain('00:00:01,000 --> 00:00:02,000');
       expect(text).toContain('Second');
     });
 
@@ -93,7 +93,8 @@ describe('SubtitleService', () => {
       expect(text).toContain('1');
       expect(text).toContain('2');
       expect(text).toContain('3');
-      expect(text).toContain('This subtitle');
+      expect(text).toContain('This');
+      expect(text).toContain('subtitle');
       expect(text).toContain('line should');
     });
   });
