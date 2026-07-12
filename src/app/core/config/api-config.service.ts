@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { API_CONFIG, ApiEndpointConfig } from './api.config';
+import { environment } from '../../../environments/environment';
 
 /**
  * API Configuration Service
@@ -10,6 +11,7 @@ import { API_CONFIG, ApiEndpointConfig } from './api.config';
 })
 export class ApiConfigService {
   private readonly config = API_CONFIG;
+  private readonly apiKey = environment.apiKey;
 
   /**
    * Get the full URL for an API endpoint
@@ -40,5 +42,16 @@ export class ApiConfigService {
    */
   getDefaultVersion(): string {
     return this.config.defaultVersion;
+  }
+
+  /**
+   * Get the API key for authentication
+   * Returns the API key from environment configuration
+   */
+  getApiKey(): string {
+    if (!this.apiKey && !environment.production) {
+      console.warn('API key is not configured. API requests may fail if the backend requires authentication.');
+    }
+    return this.apiKey || '';
   }
 }

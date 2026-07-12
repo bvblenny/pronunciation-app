@@ -4,3 +4,4 @@
  */
 
 export * from './error.interceptor';
+export * from './api-key.interceptor';

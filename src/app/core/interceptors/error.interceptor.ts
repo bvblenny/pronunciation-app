@@ -23,10 +23,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             errorMessage = error.error?.message || 'Invalid request. Please check your input.';
             break;
           case 401:
-            errorMessage = 'Authentication required. Please log in.';
+            errorMessage = 'API key is missing or expired. Please check your configuration.';
             break;
           case 403:
-            errorMessage = 'You do not have permission to perform this action.';
+            errorMessage = 'Invalid or unauthorized API key. Please verify your API key.';
             break;
           case 404:
             errorMessage = 'The requested resource was not found.';
