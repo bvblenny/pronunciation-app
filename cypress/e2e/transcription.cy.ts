@@ -225,6 +225,12 @@ describe('Transcription Feature', () => {
 
     it('should show subtitle download option when segments are available', () => {
       cy.get('.subtitle-badge').should('be.visible');
+      cy.get('.subtitle-btn').should('not.be.disabled');
+      cy.get('.subtitle-btn').click();
+      cy.get('.mat-mdc-menu-panel').should('be.visible');
+      cy.contains('button', 'SubRip (.srt)').should('be.visible');
+      cy.contains('button', 'WebVTT (.vtt)').should('be.visible');
+      cy.contains('button', 'Plain Text (.txt)').should('be.visible');
     });
   });
 
@@ -244,4 +250,3 @@ describe('Transcription Feature', () => {
     });
   });
 });
-

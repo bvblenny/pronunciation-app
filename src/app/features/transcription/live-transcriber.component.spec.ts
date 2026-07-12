@@ -132,6 +132,12 @@ describe('LiveTranscriberComponent', () => {
       component.lastTranscription.set(mockTranscription);
       expect(component.hasSubtitleData()).toBe(true);
     });
+
+    it('should return true when live segments exist without api transcription', () => {
+      component.lastTranscription.set(null);
+      component.segments.set([{ text: 'live segment', at: 0 }]);
+      expect(component.hasSubtitleData()).toBe(true);
+    });
   });
 
   describe('formatMs', () => {
@@ -284,9 +290,48 @@ describe('LiveTranscriberComponent', () => {
     });
 
     it('should not download when no transcription data', () => {
+      component.segments.set([]);
       component.lastTranscription.set(null);
       component.downloadSubtitles('vtt');
       expect(mockSubtitleService.generateSubtitles).not.toHaveBeenCalled();
+    });
+
+    it('should download subtitles from live segments when transcription payload is unavailable', () => {
+      component.lastTranscription.set(null);
+      component.segments.set([
+        { text: 'Hello', at: 0 },
+        { text: 'world', at: 1200 }
+      ]);
+
+      const mockBlob = new Blob(['test content'], { type: 'text/vtt' });
+      const mockFormatInfo = {
+        extension: 'vtt',
+        mimeType: 'text/vtt',
+        displayName: 'WebVTT (.vtt)'
+      };
+
+      mockSubtitleService.generateSubtitles.and.returnValue(mockBlob);
+      mockSubtitleService.getFormatInfo.and.returnValue(mockFormatInfo);
+
+      spyOn(URL, 'createObjectURL').and.returnValue('blob:test-url');
+      spyOn(URL, 'revokeObjectURL');
+      spyOn(document, 'createElement').and.returnValue({
+        href: '',
+        download: '',
+        click: jasmine.createSpy(),
+        style: {}
+      } as any);
+      spyOn(document.body, 'appendChild');
+      spyOn(document.body, 'removeChild');
+
+      component.downloadSubtitles('vtt');
+
+      expect(mockSubtitleService.generateSubtitles).toHaveBeenCalled();
+      const generatedSegments = mockSubtitleService.generateSubtitles.calls.mostRecent().args[0];
+      expect(generatedSegments.length).toBe(2);
+      expect(generatedSegments[0].text).toBe('Hello');
+      expect(generatedSegments[0].startMs).toBe(0);
+      expect(generatedSegments[0].endMs).toBe(1200);
     });
 
     it('should handle subtitle generation errors', () => {
@@ -311,11 +356,16 @@ describe('LiveTranscriberComponent', () => {
     it('should clear all transcription data', () => {
       component.segments.set([{ text: 'test', at: 1000 }]);
       component.interim.set('interim text');
+      component.lastTranscription.set({
+        transcript: 'test',
+        segments: [{ text: 'test', startMs: 0, endMs: 1000 }]
+      });
 
       component.clear();
 
       expect(component.segments()).toEqual([]);
       expect(component.interim()).toBe('');
+      expect(component.lastTranscription()).toBeNull();
     });
   });
 
